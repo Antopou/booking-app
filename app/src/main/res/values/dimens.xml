@@ -10,6 +10,7 @@
     <dimen name="spacing_xl">24dp</dimen>
     <dimen name="spacing_xxl">32dp</dimen>
     <dimen name="spacing_huge">48dp</dimen>
+    <dimen name="grid_spacing">8dp</dimen>
 
     <!-- Margins -->
     <dimen name="margin_small">8dp</dimen>

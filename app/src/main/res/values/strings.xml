@@ -3,6 +3,7 @@
     
     <!-- Accessibility Content Descriptions -->
     <string name="cd_room_image">Room image</string>
+    <string name="room_image">Room image</string>
     <string name="cd_user_avatar">User profile picture</string>
     <string name="cd_search_icon">Search hotels and rooms</string>
     <string name="cd_filter_bookings">Filter bookings</string>
@@ -66,6 +67,7 @@
     <string name="room_occupancy">Maximum occupancy</string>
     <string name="room_rating">Rating</string>
     <string name="room_reviews">Reviews</string>
+    <string name="max_guests">%1$d guests</string>
     
     <!-- General UI -->
     <string name="greeting_template">Hi %1$s!</string>
