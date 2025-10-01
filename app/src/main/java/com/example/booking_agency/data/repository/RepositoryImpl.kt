@@ -3,8 +3,8 @@ package com.example.booking_agency.data.repository
 import com.example.booking_agency.data.datasource.local.LocalDataSource
 import com.example.booking_agency.data.datasource.local.entity.toDomain
 import com.example.booking_agency.data.datasource.local.entity.toEntity
+import com.example.booking_agency.data.model.toDomain
 import com.example.booking_agency.data.model.toApiModel
-import com.example.booking_agency.data.model.toDomain as apiToDomain // keep this alias only if both have the same name
 import com.example.booking_agency.data.datasource.remote.NetworkResult
 import com.example.booking_agency.data.datasource.remote.RoomBookerApiService
 import com.example.booking_agency.domain.model.*
@@ -26,103 +26,67 @@ class RoomRepositoryWithApiImpl(
 
     override suspend fun getAllRooms(): Flow<List<RoomDomain>> {
         return try {
+            // Try to get from API first
             when (val result = fetchRoomsFromApi()) {
                 is NetworkResult.Success -> {
-                    // Cache to local storage (convert API -> Domain; adjust toEntity() here if your DAO expects entities)
-                    val domains = result.data.map { it.apiToDomain() }
-                    localDataSource.saveRooms(domains)
-                    flow { emit(domains) }
+                    // Cache to local storage
+                    val rooms = result.data.map { it.toDomain() }
+                    localDataSource.saveRooms(rooms)
+                    flow { emit(rooms) }
                 }
                 is NetworkResult.Error -> {
                     // Fallback to local data
-                    localDataSource.getAllRooms().map { list -> list.map { it.toDomain() } }
+                    localDataSource.getAllRooms().map { it.map { room -> room.toDomain() } }
                 }
                 is NetworkResult.Loading -> {
-                    localDataSource.getAllRooms().map { list -> list.map { it.toDomain() } }
+                    localDataSource.getAllRooms().map { it.map { room -> room.toDomain() } }
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             // Fallback to local data on any error
-            localDataSource.getAllRooms().map { list -> list.map { it.toDomain() } }
+            localDataSource.getAllRooms().map { it.map { room -> room.toDomain() } }
         }
     }
 
     override suspend fun getRoomById(roomId: String): RoomDomain? {
         return try {
-            // First try to get from local data source for quick response
-            localDataSource.getRoomById(roomId)?.toDomain()?.let { localRoom ->
-                // In parallel, try to fetch from API to ensure we have the latest data
-                try {
-                    when (val result = fetchRoomFromApi(roomId)) {
-                        is NetworkResult.Success -> result.data?.apiToDomain() ?: localRoom
-                        else -> localRoom
-                    }
-                } catch (e: Exception) {
-                    localRoom
-                }
-            } ?: run {
-                // If not found locally, try to fetch from API
-                when (val result = fetchRoomFromApi(roomId)) {
-                    is NetworkResult.Success -> result.data?.apiToDomain()
-                    else -> null
-                }
+            // Try API first
+            when (val result = fetchRoomFromApi(roomId)) {
+                is NetworkResult.Success -> result.data?.toDomain()
+                else -> localDataSource.getRoomById(roomId)?.toDomain()
             }
         } catch (e: Exception) {
-            null
-        }
-    }
-
-    private suspend fun fetchRoomFromApi(roomId: String): NetworkResult<com.example.booking_agency.data.model.RoomApiModel> {
-        return try {
-            val response = apiService.getRoomById(roomId)
-            val responseBody = response.body()
-            
-            if (response.isSuccessful && responseBody != null) {
-                if (responseBody.success) {
-                    responseBody.data?.let { room ->
-                        NetworkResult.Success(room)
-                    } ?: NetworkResult.Error("Room data not found")
-                } else {
-                    val errorMessage = responseBody.message ?: responseBody.error ?: "Unknown error occurred"
-                    NetworkResult.Error(errorMessage)
-                }
-            } else {
-                val errorMessage = when (response.code()) {
-                    404 -> "Room not found"
-                    401 -> "Unauthorized access"
-                    500 -> "Internal server error"
-                    else -> "HTTP ${response.code()} - ${response.message()}"
-                }
-                NetworkResult.Error(errorMessage)
-            }
-        } catch (e: Exception) {
-            NetworkResult.Error("Failed to fetch room: ${e.message ?: "Unknown error"}")
+            localDataSource.getRoomById(roomId)?.toDomain()
         }
     }
 
     override suspend fun getRoomsByType(type: RoomType): Flow<List<RoomDomain>> {
-        return localDataSource.getRoomsByType(type).map { list -> list.map { it.toDomain() } }
+        return localDataSource.getRoomsByType(type).map { it.map { room -> room.toDomain() } }
     }
 
     override suspend fun searchRooms(query: String): Flow<List<RoomDomain>> {
-        return localDataSource.searchRooms(query).map { list -> list.map { it.toDomain() } }
+        return localDataSource.searchRooms(query).map { it.map { room -> room.toDomain() } }
     }
 
     override suspend fun getRoomsByPriceRange(minPrice: Double, maxPrice: Double): Flow<List<RoomDomain>> {
         return localDataSource.getRoomsByPriceRange(minPrice, maxPrice)
-            .map { list -> list.map { it.toDomain() } }
+            .map { it.map { room -> room.toDomain() } }
     }
 
     override suspend fun refreshRooms(): Result<Unit> {
         return try {
             when (val result = fetchRoomsFromApi()) {
                 is NetworkResult.Success -> {
-                    val domains = result.data.map { it.apiToDomain() }
-                    localDataSource.saveRooms(domains)
+                    val rooms = result.data.map { it.toDomain() }
+                    localDataSource.saveRooms(rooms)
                     Result.success(Unit)
                 }
-                is NetworkResult.Error -> Result.failure(Exception(result.message))
-                is NetworkResult.Loading -> Result.failure(Exception("Still loading"))
+                is NetworkResult.Error -> {
+                    Result.failure(Exception(result.message))
+                }
+                is NetworkResult.Loading -> {
+                    Result.failure(Exception("Still loading"))
+                }
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -177,11 +141,11 @@ class BookingRepositoryWithApiImpl(
 ) : BookingRepository {
 
     override suspend fun getAllBookings(): Flow<List<BookingDomain>> {
-        return localDataSource.getAllBookings().map { list -> list.map { it.toDomain() } }
+        return localDataSource.getAllBookings().map { it.map { booking -> booking.toDomain() } }
     }
 
     override suspend fun getBookingsByUserId(userId: String): Flow<List<BookingDomain>> {
-        return localDataSource.getBookingsByUserId(userId).map { list -> list.map { it.toDomain() } }
+        return localDataSource.getBookingsByUserId(userId).map { it.map { booking -> booking.toDomain() } }
     }
 
     override suspend fun getBookingById(bookingId: String): BookingDomain? {
@@ -202,7 +166,7 @@ class BookingRepositoryWithApiImpl(
             if (response.isSuccessful) {
                 response.body()?.let { apiResponse ->
                     if (apiResponse.success) {
-                        // Save to local storage (adjust toEntity() if your DAO expects entities)
+                        // Save to local storage
                         localDataSource.saveBooking(booking)
                         Result.success(apiResponse.data ?: "")
                     } else {
@@ -247,7 +211,7 @@ class BookingRepositoryWithApiImpl(
     }
 
     override suspend fun refreshBookings(): Result<Unit> {
-        // Optional: implement sync from API to local
+        // Implementation for refreshing bookings from API
         return Result.success(Unit)
     }
 }
@@ -261,11 +225,11 @@ class UserRepositoryWithApiImpl(
 ) : UserRepository {
 
     override suspend fun getCurrentUser(): Flow<UserDomain?> {
-        return localDataSource.getCurrentUser().map { it?.toDomain() }
+        return localDataSource.getCurrentUser()
     }
 
     override suspend fun getUserById(userId: String): UserDomain? {
-        return localDataSource.getUserById(userId)?.toDomain()
+        return localDataSource.getUserById(userId)
     }
 
     override suspend fun createUser(user: UserDomain): Result<String> {
@@ -294,8 +258,8 @@ class UserRepositoryWithApiImpl(
             if (response.isSuccessful) {
                 response.body()?.let { apiResponse ->
                     if (apiResponse.success && apiResponse.data != null) {
-                        val user = apiResponse.data.apiToDomain()
-                        localDataSource.saveUser(user.toEntity())
+                        val user = apiResponse.data.toDomain()
+                        localDataSource.saveUser(user)
                         Result.success(user)
                     } else {
                         Result.failure(Exception(apiResponse.message))
@@ -317,8 +281,8 @@ class UserRepositoryWithApiImpl(
             if (response.isSuccessful) {
                 response.body()?.let { apiResponse ->
                     if (apiResponse.success && apiResponse.data != null) {
-                        val user = apiResponse.data.apiToDomain()
-                        localDataSource.saveUser(user.toEntity())
+                        val user = apiResponse.data.toDomain()
+                        localDataSource.saveUser(user)
                         Result.success(user)
                     } else {
                         Result.failure(Exception(apiResponse.message))
@@ -352,7 +316,7 @@ class UserRepositoryWithApiImpl(
             if (response.isSuccessful) {
                 response.body()?.let { apiResponse ->
                     if (apiResponse.success && apiResponse.data != null) {
-                        localDataSource.saveUser(apiResponse.data.apiToDomain().toEntity())
+                        localDataSource.saveUser(apiResponse.data.toDomain())
                         Result.success(Unit)
                     } else {
                         Result.failure(Exception(apiResponse.message))

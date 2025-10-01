@@ -1,8 +1,12 @@
 package com.example.booking_agency.utils
 
 import com.example.booking_agency.data.datasource.local.LocalDataSource
+import com.example.booking_agency.data.datasource.local.entity.toDomain
+import com.example.booking_agency.data.datasource.local.entity.toEntity
 import com.example.booking_agency.data.datasource.remote.NetworkResult
 import com.example.booking_agency.data.datasource.remote.RoomBookerApiService
+import com.example.booking_agency.data.model.toDomain
+import com.example.booking_agency.data.model.toApiModel
 import com.example.booking_agency.domain.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -12,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Sync manager for offline-first data synchronization
  */
 class SyncManager(
-    private val apiService: RoomBookerApiService,
+    private val apiService: RoomBookerApiService?,
     private val localDataSource: LocalDataSource,
     private val networkManager: NetworkManager
 ) {
@@ -104,6 +108,11 @@ class SyncManager(
      * Sync fresh data from server
      */
     private suspend fun syncFromServer() {
+        if (apiService == null) {
+            // No API service available - skip server sync
+            return
+        }
+        
         try {
             // Sync rooms
             when (val result = fetchRoomsFromApi()) {
@@ -169,6 +178,10 @@ class SyncManager(
      * Sync booking creation with server
      */
     private suspend fun syncBookingCreation(booking: BookingDomain): Result<String> {
+        if (apiService == null) {
+            return Result.failure(Exception("API service not available"))
+        }
+        
         return try {
             val request = com.example.booking_agency.data.model.CreateBookingRequest(
                 roomId = booking.roomId,
@@ -202,6 +215,10 @@ class SyncManager(
      * Sync booking update with server
      */
     private suspend fun syncBookingUpdate(booking: BookingDomain): Result<Unit> {
+        if (apiService == null) {
+            return Result.failure(Exception("API service not available"))
+        }
+        
         return try {
             val response = apiService.updateBooking(booking.id, booking.toApiModel())
             if (response.isSuccessful) {
@@ -225,6 +242,10 @@ class SyncManager(
      * Sync booking cancellation with server
      */
     private suspend fun syncBookingCancellation(bookingId: String): Result<Unit> {
+        if (apiService == null) {
+            return Result.failure(Exception("API service not available"))
+        }
+        
         return try {
             val response = apiService.cancelBooking(bookingId)
             if (response.isSuccessful) {
@@ -248,6 +269,10 @@ class SyncManager(
      * Fetch rooms from API
      */
     private suspend fun fetchRoomsFromApi(): NetworkResult<List<com.example.booking_agency.data.model.RoomApiModel>> {
+        if (apiService == null) {
+            return NetworkResult.Error("API service not available")
+        }
+        
         return try {
             val response = apiService.getAllRooms()
             if (response.isSuccessful) {
@@ -270,6 +295,10 @@ class SyncManager(
      * Fetch user profile from API
      */
     private suspend fun fetchUserProfileFromApi(): NetworkResult<com.example.booking_agency.data.model.UserApiModel?> {
+        if (apiService == null) {
+            return NetworkResult.Error("API service not available")
+        }
+        
         return try {
             val response = apiService.getCurrentUser()
             if (response.isSuccessful) {

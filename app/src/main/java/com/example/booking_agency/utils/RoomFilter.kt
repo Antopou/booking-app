@@ -1,6 +1,6 @@
-package com.example.booking_gency.utils
+package com.example.booking_agency.utils
 
-import com.example.booking_gency.models.Room
+import com.example.booking_agency.models.Room
 
 class RoomFilter {
     

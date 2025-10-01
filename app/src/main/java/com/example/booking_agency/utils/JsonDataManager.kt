@@ -3,6 +3,7 @@ package com.example.booking_agency.utils
 import android.content.Context
 import com.example.booking_agency.data.datasource.local.LocalDataSource
 import com.example.booking_agency.data.datasource.local.RoomBookerDatabase
+import com.example.booking_agency.data.datasource.local.entity.toDomain
 import com.example.booking_agency.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -16,8 +17,9 @@ import java.util.*
  */
 class JsonDataManager(private val context: Context) {
 
-    private val database = RoomBookerDatabase.getInstance(context)
-    private val localDataSource = LocalDataSource(database)
+    private lateinit var database: RoomBookerDatabase
+    private lateinit var localDataSource: LocalDataSource
+    private var isInitialized = false
 
     // Sample data properties
     val users: List<UserDomain>
@@ -25,25 +27,32 @@ class JsonDataManager(private val context: Context) {
     val bookings: List<BookingDomain>
 
     init {
-        // Initialize with sample data if database is empty
+        // Initialize with sample data immediately (no database dependency)
         users = createSampleUsers()
         rooms = createSampleRooms()
         bookings = createSampleBookings()
+    }
 
-        // Populate database with sample data if empty
-        populateDatabaseIfEmpty()
+    /**
+     * Initialize database asynchronously - call this from a background thread
+     */
+    suspend fun initializeDatabase() {
+        if (!isInitialized) {
+            database = RoomBookerDatabase.getInstance(context)
+            localDataSource = LocalDataSource(database)
+            isInitialized = true
+            
+            // Populate database with sample data if empty
+            populateDatabaseIfEmpty()
+        }
     }
 
     // User operations
-    fun getUsers(): List<UserDomain> = users
-
     fun getUserById(userId: String): UserDomain? {
         return users.find { it.id == userId }
     }
 
     // Room operations
-    fun getRooms(): List<RoomDomain> = rooms
-
     fun getRoomById(roomId: String): RoomDomain? {
         return rooms.find { it.id == roomId }
     }
@@ -53,8 +62,6 @@ class JsonDataManager(private val context: Context) {
     }
 
     // Booking operations
-    fun getBookings(): List<BookingDomain> = bookings
-
     fun getBookingsByUserId(userId: String): List<BookingDomain> {
         return bookings.filter { it.userId == userId }
     }
@@ -65,32 +72,45 @@ class JsonDataManager(private val context: Context) {
 
     // Database operations
     suspend fun saveUser(user: UserDomain) {
+        initializeDatabase()
         localDataSource.saveUser(user)
     }
 
     suspend fun saveRoom(room: RoomDomain) {
+        initializeDatabase()
         localDataSource.saveRoom(room)
     }
 
     suspend fun saveBooking(booking: BookingDomain) {
+        initializeDatabase()
         localDataSource.saveBooking(booking)
     }
 
     fun getAllRoomsFlow(): Flow<List<RoomDomain>> {
-        return localDataSource.getAllRooms().map { entities ->
-            entities.map { it.toDomain() }
+        return flow {
+            initializeDatabase()
+            localDataSource.getAllRooms().collect { entities ->
+                emit(entities.map { it.toDomain() })
+            }
         }
     }
 
     fun getBookingsByUserIdFlow(userId: String): Flow<List<BookingDomain>> {
-        return localDataSource.getBookingsByUserId(userId).map { entities ->
-            entities.map { it.toDomain() }
+        return flow {
+            initializeDatabase()
+            localDataSource.getBookingsByUserId(userId).collect { entities ->
+                emit(entities.map { it.toDomain() })
+            }
         }
     }
 
-    private fun populateDatabaseIfEmpty() {
+    private suspend fun populateDatabaseIfEmpty() {
         // This would be called during app initialization
         // For now, we'll just ensure sample data exists
+        if (isInitialized) {
+            // Check if database is empty and populate if needed
+            // This is a placeholder for future implementation
+        }
     }
 
     private fun createSampleUsers(): List<UserDomain> {

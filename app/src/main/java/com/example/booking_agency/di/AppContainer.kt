@@ -25,115 +25,103 @@ import com.example.booking_agency.utils.SyncManager
  */
 object AppContainer {
 
-    private lateinit var database: RoomBookerDatabase
-    private lateinit var localDataSource: LocalDataSource
+    private var database: RoomBookerDatabase? = null
+    private var localDataSource: LocalDataSource? = null
 
-    private lateinit var roomRepository: RoomRepository
-    private lateinit var bookingRepository: BookingRepository
-    private lateinit var userRepository: UserRepository
+    private var roomRepository: RoomRepository? = null
+    private var bookingRepository: BookingRepository? = null
+    private var userRepository: UserRepository? = null
 
     // Offline support
-    private lateinit var networkManager: NetworkManager
-    private lateinit var syncManager: SyncManager
-    private lateinit var offlineDataManager: OfflineDataManager
-    private lateinit var retryManager: RetryManager
+    private var networkManager: NetworkManager? = null
+    private var syncManager: SyncManager? = null
+    private var offlineDataManager: OfflineDataManager? = null
+    private var retryManager: RetryManager? = null
 
     // Use Cases
-    private lateinit var getAllRoomsUseCase: GetAllRoomsUseCase
-    private lateinit var getRoomDetailsUseCase: GetRoomDetailsUseCase
-    private lateinit var searchRoomsUseCase: SearchRoomsUseCase
-    private lateinit var getRoomsByTypeUseCase: GetRoomsByTypeUseCase
-    private lateinit var getUserBookingsUseCase: GetUserBookingsUseCase
-    private lateinit var createBookingUseCase: CreateBookingUseCase
-    private lateinit var getCurrentUserUseCase: GetCurrentUserUseCase
-    private lateinit var loginUserUseCase: LoginUserUseCase
-    private lateinit var registerUserUseCase: RegisterUserUseCase
-    private lateinit var calculateBookingTotalUseCase: CalculateBookingTotalUseCase
-    private lateinit var validateBookingDatesUseCase: ValidateBookingDatesUseCase
+    private var getAllRoomsUseCase: GetAllRoomsUseCase? = null
+    private var getRoomDetailsUseCase: GetRoomDetailsUseCase? = null
+    private var searchRoomsUseCase: SearchRoomsUseCase? = null
+    private var getRoomsByTypeUseCase: GetRoomsByTypeUseCase? = null
+    private var getUserBookingsUseCase: GetUserBookingsUseCase? = null
+    private var createBookingUseCase: CreateBookingUseCase? = null
+    private var getCurrentUserUseCase: GetCurrentUserUseCase? = null
+    private var loginUserUseCase: LoginUserUseCase? = null
+    private var registerUserUseCase: RegisterUserUseCase? = null
+    private var calculateBookingTotalUseCase: CalculateBookingTotalUseCase? = null
+    private var validateBookingDatesUseCase: ValidateBookingDatesUseCase? = null
+
+    private var isInitialized = false
 
     fun initialize(context: Context) {
-        database = RoomBookerDatabase.getInstance(context)
-        localDataSource = LocalDataSource(database)
-
-        // Initialize offline support
+        if (isInitialized) return
+        
+        // Initialize lightweight components only
         networkManager = NetworkManager(context)
-        retryManager = RetryManager(networkManager)
-
-        // Create API service (mock for now)
-        val apiService = object : com.example.booking_agency.data.datasource.remote.RoomBookerApiService {
-            // Mock implementation - would be replaced with real Retrofit service
-            override suspend fun getAllRooms() = TODO("Mock API - implement when ready")
-            override suspend fun getRoomById(roomId: String) = TODO("Mock API - implement when ready")
-            override suspend fun searchRooms(q: String) = TODO("Mock API - implement when ready")
-            override suspend fun getRoomsByFilter(type: String?, minPrice: Double?, maxPrice: Double?, minRating: Float?, amenities: List<String>?) = TODO("Mock API - implement when ready")
-            override suspend fun getAllBookings() = TODO("Mock API - implement when ready")
-            override suspend fun getUserBookings(userId: String) = TODO("Mock API - implement when ready")
-            override suspend fun getBookingById(bookingId: String) = TODO("Mock API - implement when ready")
-            override suspend fun createBooking(bookingRequest: com.example.booking_agency.data.model.CreateBookingRequest) = TODO("Mock API - implement when ready")
-            override suspend fun updateBooking(bookingId: String, booking: com.example.booking_agency.data.model.BookingApiModel) = TODO("Mock API - implement when ready")
-            override suspend fun cancelBooking(bookingId: String) = TODO("Mock API - implement when ready")
-            override suspend fun getCurrentUser() = TODO("Mock API - implement when ready")
-            override suspend fun getUserById(userId: String) = TODO("Mock API - implement when ready")
-            override suspend fun loginUser(loginRequest: com.example.booking_agency.data.model.LoginRequest) = TODO("Mock API - implement when ready")
-            override suspend fun registerUser(registerRequest: com.example.booking_agency.data.model.RegisterRequest) = TODO("Mock API - implement when ready")
-            override suspend fun updateUser(updateRequest: com.example.booking_agency.data.model.UpdateUserRequest) = TODO("Mock API - implement when ready")
-            override suspend fun logoutUser() = TODO("Mock API - implement when ready")
-            override suspend fun refreshToken() = TODO("Mock API - implement when ready")
-        }
-
-        // Initialize sync manager
-        syncManager = SyncManager(apiService, localDataSource, networkManager)
-        offlineDataManager = OfflineDataManager(localDataSource, syncManager, networkManager)
-
-        // Initialize repositories
-        roomRepository = SimpleRoomRepositoryImpl(localDataSource)
-        bookingRepository = SimpleBookingRepositoryImpl(localDataSource)
-        userRepository = SimpleUserRepositoryImpl(localDataSource)
-
-        // Initialize use cases
-        getAllRoomsUseCase = GetAllRoomsUseCase(roomRepository)
-        getRoomDetailsUseCase = GetRoomDetailsUseCase(roomRepository)
-        searchRoomsUseCase = SearchRoomsUseCase(roomRepository)
-        getRoomsByTypeUseCase = GetRoomsByTypeUseCase(roomRepository)
-        getUserBookingsUseCase = GetUserBookingsUseCase(bookingRepository)
-        createBookingUseCase = CreateBookingUseCase(bookingRepository)
-        getCurrentUserUseCase = GetCurrentUserUseCase(userRepository)
-        loginUserUseCase = LoginUserUseCase(userRepository)
-        registerUserUseCase = RegisterUserUseCase(userRepository)
+        retryManager = RetryManager(networkManager!!)
+        
+        // Initialize use cases that don't require database
         calculateBookingTotalUseCase = CalculateBookingTotalUseCase()
         validateBookingDatesUseCase = ValidateBookingDatesUseCase()
+        
+        isInitialized = true
+    }
+    
+    suspend fun initializeDatabase(context: Context) {
+        if (database == null) {
+            database = RoomBookerDatabase.getInstance(context)
+            localDataSource = LocalDataSource(database!!)
+
+            // Initialize sync manager with null API service for now
+            syncManager = SyncManager(null, localDataSource!!, networkManager!!)
+            offlineDataManager = OfflineDataManager(localDataSource!!, syncManager!!, networkManager!!)
+
+            // Initialize repositories
+            roomRepository = SimpleRoomRepositoryImpl(localDataSource!!)
+            bookingRepository = SimpleBookingRepositoryImpl(localDataSource!!)
+            userRepository = SimpleUserRepositoryImpl(localDataSource!!)
+
+            // Initialize use cases
+            getAllRoomsUseCase = GetAllRoomsUseCase(roomRepository!!)
+            getRoomDetailsUseCase = GetRoomDetailsUseCase(roomRepository!!)
+            searchRoomsUseCase = SearchRoomsUseCase(roomRepository!!)
+            getRoomsByTypeUseCase = GetRoomsByTypeUseCase(roomRepository!!)
+            getUserBookingsUseCase = GetUserBookingsUseCase(bookingRepository!!)
+            createBookingUseCase = CreateBookingUseCase(bookingRepository!!)
+            getCurrentUserUseCase = GetCurrentUserUseCase(userRepository!!)
+            loginUserUseCase = LoginUserUseCase(userRepository!!)
+            registerUserUseCase = RegisterUserUseCase(userRepository!!)
+        }
     }
 
     // Repository getters
-    fun getRoomRepository(): RoomRepository = roomRepository
-    fun getBookingRepository(): BookingRepository = bookingRepository
-    fun getUserRepository(): UserRepository = userRepository
+    fun getRoomRepository(): RoomRepository = roomRepository ?: throw IllegalStateException("AppContainer not initialized")
+    fun getBookingRepository(): BookingRepository = bookingRepository ?: throw IllegalStateException("AppContainer not initialized")
+    fun getUserRepository(): UserRepository = userRepository ?: throw IllegalStateException("AppContainer not initialized")
 
     // Offline support getters
-    fun getNetworkManager(): NetworkManager = networkManager
-    fun getSyncManager(): SyncManager = syncManager
-    fun getOfflineDataManager(): OfflineDataManager = offlineDataManager
-    fun getRetryManager(): RetryManager = retryManager
+    fun getNetworkManager(): NetworkManager = networkManager ?: throw IllegalStateException("AppContainer not initialized")
+    fun getSyncManager(): SyncManager = syncManager ?: throw IllegalStateException("AppContainer not initialized")
+    fun getOfflineDataManager(): OfflineDataManager = offlineDataManager ?: throw IllegalStateException("AppContainer not initialized")
+    fun getRetryManager(): RetryManager = retryManager ?: throw IllegalStateException("AppContainer not initialized")
 
     // Use case getters
-    fun getAllRoomsUseCase(): GetAllRoomsUseCase = getAllRoomsUseCase
-    fun getRoomDetailsUseCase(): GetRoomDetailsUseCase = getRoomDetailsUseCase
-    fun getSearchRoomsUseCase(): SearchRoomsUseCase = searchRoomsUseCase
-    fun getRoomsByTypeUseCase(): GetRoomsByTypeUseCase = getRoomsByTypeUseCase
-    fun getUserBookingsUseCase(): GetUserBookingsUseCase = getUserBookingsUseCase
-    fun getCreateBookingUseCase(): CreateBookingUseCase = createBookingUseCase
-    fun getCurrentUserUseCase(): GetCurrentUserUseCase = getCurrentUserUseCase
-    fun getLoginUserUseCase(): LoginUserUseCase = loginUserUseCase
-    fun getRegisterUserUseCase(): RegisterUserUseCase = registerUserUseCase
-    fun getCalculateBookingTotalUseCase(): CalculateBookingTotalUseCase = calculateBookingTotalUseCase
-    fun getValidateBookingDatesUseCase(): ValidateBookingDatesUseCase = validateBookingDatesUseCase
+    fun getAllRoomsUseCase(): GetAllRoomsUseCase = getAllRoomsUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getRoomDetailsUseCase(): GetRoomDetailsUseCase = getRoomDetailsUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getSearchRoomsUseCase(): SearchRoomsUseCase = searchRoomsUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getRoomsByTypeUseCase(): GetRoomsByTypeUseCase = getRoomsByTypeUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getUserBookingsUseCase(): GetUserBookingsUseCase = getUserBookingsUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getCreateBookingUseCase(): CreateBookingUseCase = createBookingUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getCurrentUserUseCase(): GetCurrentUserUseCase = getCurrentUserUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getLoginUserUseCase(): LoginUserUseCase = loginUserUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getRegisterUserUseCase(): RegisterUserUseCase = registerUserUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getCalculateBookingTotalUseCase(): CalculateBookingTotalUseCase = calculateBookingTotalUseCase ?: throw IllegalStateException("AppContainer not initialized")
+    fun getValidateBookingDatesUseCase(): ValidateBookingDatesUseCase = validateBookingDatesUseCase ?: throw IllegalStateException("AppContainer not initialized")
 
-    // ViewModel factory methods
-    fun createMainViewModel(): MainViewModel {
-        return MainViewModel(
-            getAllRoomsUseCase = getAllRoomsUseCase(),
-            getCurrentUserUseCase = getCurrentUserUseCase()
-        )
+    // ViewModel factory methods - simple implementations that don't require immediate database access
+    fun createMainViewModel(): MainViewModel? {
+        // Don't create ViewModel until database is ready
+        return null
     }
 
     fun createRoomsViewModel(): RoomsViewModel {
@@ -163,6 +151,6 @@ object AppContainer {
     }
 
     fun cleanup() {
-        syncManager.cleanup()
+        syncManager?.cleanup()
     }
 }

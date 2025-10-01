@@ -1,5 +1,7 @@
 package com.example.booking_agency.models
 
+import com.example.booking_agency.R
+
 data class Booking(
     val id: String = "",
     val userId: String = "",

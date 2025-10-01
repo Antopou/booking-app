@@ -1,5 +1,7 @@
 package com.example.booking_agency.models
 
+import com.example.booking_agency.R
+
 data class Room(
     val id: String = "",
     val name: String = "",

@@ -79,9 +79,9 @@ class ServicesActivity : AppCompatActivity() {
         // Simulate network/database call
         recyclerView.postDelayed({
             try {
-                val allRooms = dataManager.getRooms()
-                val filteredRooms = allRooms.filter { 
-                    it.type.toString().equals(roomType, ignoreCase = true) 
+                val allRooms = dataManager.rooms
+                val filteredRooms = allRooms.filter { room ->
+                    room.type.toString().equals(roomType, ignoreCase = true) 
                 }
                 
                 if (filteredRooms.isNotEmpty()) {

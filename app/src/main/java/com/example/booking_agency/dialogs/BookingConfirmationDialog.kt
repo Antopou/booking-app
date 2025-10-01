@@ -39,16 +39,16 @@ class BookingConfirmationDialog(
         findViewById<ImageView>(R.id.room_image).setImageResource(room.getFirstImage())
         
         // Set room details
-        findViewById<TextView>(R.id.room_name).text = room.name
-        findViewById<TextView>(R.id.hotel_name).text = room.hotelName
+        findViewById<TextView>(R.id.dialog_room_name).text = room.name
+        findViewById<TextView>(R.id.dialog_hotel_name).text = room.hotelName
         
         // Format and set dates
         val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
         val checkInDate = SimpleDateFormat("yyyy-MM-dd").parse(booking.checkInDate) ?: Date()
         val checkOutDate = SimpleDateFormat("yyyy-MM-dd").parse(booking.checkOutDate) ?: Date()
         
-        findViewById<TextView>(R.id.check_in_date).text = dateFormat.format(checkInDate)
-        findViewById<TextView>(R.id.check_out_date).text = dateFormat.format(checkOutDate)
+        findViewById<TextView>(R.id.dialog_check_in).text = dateFormat.format(checkInDate)
+        findViewById<TextView>(R.id.dialog_check_out).text = dateFormat.format(checkOutDate)
         
         // Set guest count
         val nights = booking.getNights()
@@ -58,7 +58,7 @@ class BookingConfirmationDialog(
             booking.guests
         )
         
-        findViewById<TextView>(R.id.nights_guests).text = 
+        findViewById<TextView>(R.id.dialog_nights).text = 
             context.getString(R.string.nights_guests_format, nights, guestText)
         
         // Set price summary
@@ -71,17 +71,16 @@ class BookingConfirmationDialog(
             currency = Currency.getInstance("USD")
         }
         
-        findViewById<TextView>(R.id.subtotal_amount).text = currencyFormat.format(subtotal)
-        findViewById<TextView>(R.id.taxes_amount).text = currencyFormat.format(taxes)
-        findViewById<TextView>(R.id.total_amount).text = currencyFormat.format(total)
+        findViewById<TextView>(R.id.dialog_price_per_night).text = currencyFormat.format(subtotal)
+        findViewById<TextView>(R.id.dialog_total_price).text = currencyFormat.format(total)
         
         // Set button click listeners
-        findViewById<Button>(R.id.cancel_button).setOnClickListener {
+        findViewById<Button>(R.id.btn_cancel_booking).setOnClickListener {
             onCancel()
             dismiss()
         }
         
-        findViewById<Button>(R.id.confirm_button).setOnClickListener {
+        findViewById<Button>(R.id.btn_confirm_booking).setOnClickListener {
             onConfirm()
             dismiss()
         }

@@ -6,6 +6,15 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
 /**
+ * Configuration for retry operations
+ */
+data class RetryConfig(
+    val maxRetries: Int,
+    val initialDelayMs: Long,
+    val shouldRetry: (Throwable) -> Boolean
+)
+
+/**
  * Retry manager for handling failed operations with exponential backoff
  */
 class RetryManager(
@@ -59,8 +68,8 @@ class RetryManager(
                     is java.net.UnknownHostException,
                     is java.net.ConnectException,
                     is java.net.SocketTimeoutException -> {
-                        // Retry network errors when we come back online
-                        networkManager.networkState.first() is NetworkState.Available
+                        // Retry network errors
+                        true
                     }
                     else -> false
                 }
@@ -131,7 +140,7 @@ class RetryManager(
 /**
  * Retry configuration for different types of operations
  */
-object RetryConfig {
+object RetryPolicies {
     val NETWORK_OPERATIONS = RetryConfig(
         maxRetries = 3,
         initialDelayMs = 1000L,
@@ -161,9 +170,3 @@ object RetryConfig {
         }
     )
 }
-
-data class RetryConfig(
-    val maxRetries: Int,
-    val initialDelayMs: Long,
-    val shouldRetry: (Throwable) -> Boolean
-)

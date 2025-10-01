@@ -3,6 +3,12 @@ package com.example.booking_agency.presentation.state
 import com.example.booking_agency.utils.NetworkState
 import com.example.booking_agency.utils.SyncState
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Global UI state for offline support
@@ -77,7 +83,7 @@ class OfflineStateViewModel(
 private fun <T> Flow<T>.collectInViewModelScope(action: (T) -> Unit) {
     // In a real implementation, this would use viewModelScope
     // For now, we'll use a simple launch
-    kotlinx.coroutines.GlobalScope.launch {
+    GlobalScope.launch {
         collect(action)
     }
 }

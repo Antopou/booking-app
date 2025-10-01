@@ -1,6 +1,8 @@
 package com.example.booking_agency.utils
 
 import com.example.booking_agency.data.datasource.local.LocalDataSource
+import com.example.booking_agency.data.datasource.local.entity.toDomain
+import com.example.booking_agency.data.datasource.local.entity.toEntity
 import com.example.booking_agency.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

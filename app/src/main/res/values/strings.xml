@@ -79,6 +79,23 @@
     <!-- Price Formatting -->
     <string name="price_per_night">$%1$.2f/night</string>
     <string name="price_total">$%1$.2f</string>
-    <string name="guests_and_nights">%1$d guests • %2$d nights</string>
+    <string name="guests_and_nights">%1$d guests &#8226; %2$d nights</string>
     
+    <!-- Booking Confirmation Dialog -->
+    <string name="check_in_date">Check-in Date</string>
+    <string name="check_out_date">Check-out Date</string>
+    <string name="nights_guests">%1$d nights &#8226; %2$s</string>
+    <string name="nights_guests_format">%1$d nights &#8226; %2$s</string>
+    <string name="subtotal_amount">Subtotal</string>
+    <string name="taxes_amount">Taxes &amp; Fees</string>
+    <string name="total_amount">Total</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="confirm_button">Confirm Booking</string>
+    
+    <!-- Plurals for guests -->
+    <plurals name="number_of_guests">
+        <item quantity="one">%d guest</item>
+        <item quantity="other">%d guests</item>
+    </plurals>
+
 </resources>

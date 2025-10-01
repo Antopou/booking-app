@@ -1,10 +1,60 @@
 package com.example.booking_agency.data.model
 
+import com.example.booking_agency.data.datasource.local.entity.UserEntity
 import com.example.booking_agency.domain.model.*
+import java.util.*
 
 /**
  * Extension functions for converting between API models and Domain models
  */
+
+// User Entity to Domain mapping
+fun UserEntity.toDomain(): UserDomain {
+    return UserDomain(
+        id = id,
+        name = name,
+        email = email,
+        phone = phone,
+        profileImage = profileImage,
+        memberSince = memberSince,
+        preferences = UserPreferencesDomain(
+            language = language,
+            currency = currency,
+            notificationsEnabled = notificationsEnabled,
+            darkMode = darkMode
+        )
+    )
+}
+
+// User Domain to Entity mapping
+fun UserDomain.toEntity(): UserEntity {
+    return UserEntity(
+        id = id,
+        name = name,
+        email = email,
+        phone = phone,
+        profileImage = profileImage,
+        memberSince = memberSince,
+        language = preferences.language,
+        currency = preferences.currency,
+        notificationsEnabled = preferences.notificationsEnabled,
+        darkMode = preferences.darkMode,
+        updatedAt = Date()
+    )
+}
+
+// API to Domain mapping (for user)
+fun UserApiModel.apiToDomain(): UserDomain {
+    return UserDomain(
+        id = id,
+        name = name,
+        email = email,
+        phone = phone,
+        profileImage = profileImage,
+        memberSince = memberSince,
+        preferences = preferences.toDomain()
+    )
+}
 
 // Room mappings
 fun RoomApiModel.toDomain(): RoomDomain {
