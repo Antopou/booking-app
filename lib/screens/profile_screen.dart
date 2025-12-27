@@ -1,182 +1,174 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  // Matching the brand color from your RoomListingScreen
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        title: const Text(
-          'My Profile',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+    return Column(
+      children: [
+        // Premium AppBar Header
+        AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          title: Text(
+            'LuxeStay Member',
+            style: GoogleFonts.poppins(
+              color: darkGrey,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              letterSpacing: 1.2,
+            ),
           ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            _buildProfileHeader(),
-            const SizedBox(height: 30),
-            _buildActionSection(context),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: darkGrey),
+              onPressed: () {},
+            ),
           ],
         ),
-      ),
-      // --- Added Bottom Navigation Bar ---
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2, // Set to 2 because we are on the Profile tab
-        onTap: (index) {
-          if (index == 0) Navigator.pushReplacementNamed(context, '/');
-          if (index == 1) Navigator.pushReplacementNamed(context, '/bookings');
-        },
-        selectedItemColor: brandGold,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Rooms',
+        
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                _buildProfileHeader(),
+                const SizedBox(height: 30),
+                _buildActionSection(context),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person), // Filled icon for active state
-            label: 'Profile',
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildProfileHeader() {
-    return Padding(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: brandGold.withOpacity(0.1),
-                  child: const Icon(Icons.person, size: 40, color: brandGold),
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: brandGold, width: 2),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: brandGold,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.edit, size: 12, color: Colors.white),
+                child: const CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070'),
                 ),
-              ],
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'John Doe',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'john.doe@example.com',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                  ),
-                ],
               ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                  color: darkGrey,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Johnathan Doe',
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: darkGrey,
             ),
-          ],
-        ),
+          ),
+          Text(
+            'Gold Elite Member',
+            style: GoogleFonts.poppins(
+              color: brandGold,
+              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildActionSection(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Account Settings",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.1),
-          ),
-          const SizedBox(height: 15),
+          _buildSectionHeader("MEMBERSHIP & ACCOUNT"),
+          const SizedBox(height: 12),
           _buildMenuCard([
             _buildMenuItem(Icons.person_outline, "Personal Information"),
             _buildMenuItem(Icons.credit_card_outlined, "Payment Methods"),
-            _buildMenuItem(Icons.history_outlined, "Booking History"),
-          ]),
-          const SizedBox(height: 25),
-          const Text(
-            "Support",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.1),
-          ),
-          const SizedBox(height: 15),
-          _buildMenuCard([
-            _buildMenuItem(Icons.favorite_border, "Wishlist"),
-            _buildMenuItem(Icons.help_outline, "Help Center"),
-            _buildMenuItem(Icons.info_outline, "About LuxeStay"),
+            _buildMenuItem(Icons.loyalty_outlined, "Rewards & Points"),
           ]),
           const SizedBox(height: 30),
+          _buildSectionHeader("PREFERENCES"),
+          const SizedBox(height: 12),
+          _buildMenuCard([
+            _buildMenuItem(Icons.favorite_border, "Saved Destinations"),
+            _buildMenuItem(Icons.notifications_none, "Notifications"),
+            _buildMenuItem(Icons.language_outlined, "Language & Currency"),
+          ]),
+          const SizedBox(height: 40),
+          
+          // Log Out Button with a more refined "Ghost" style
           SizedBox(
             width: double.infinity,
-            child: TextButton.icon(
+            child: TextButton(
               onPressed: () {},
-              icon: const Icon(Icons.logout, color: Colors.redAccent),
-              label: const Text(
-                "Log Out",
-                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-              ),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
+                  borderRadius: BorderRadius.circular(15),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                "SIGN OUT",
+                style: GoogleFonts.poppins(
+                  color: Colors.red.shade400,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2.0,
+                  fontSize: 12,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
+          Center(
+            child: Text(
+              "Version 2.4.0",
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
+            ),
+          ),
+          const SizedBox(height: 100), // Navigation spacing
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.poppins(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: Colors.grey.shade500,
+        letterSpacing: 1.5,
       ),
     );
   }
@@ -185,8 +177,14 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(children: children),
     );
@@ -194,19 +192,17 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildMenuItem(IconData icon, String title) {
     return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: brandGold.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: brandGold, size: 20),
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      leading: Icon(icon, color: darkGrey, size: 22),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        style: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: darkGrey,
+        ),
       ),
-      trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
       onTap: () {},
     );
   }
