@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:booking_agency/screens/bookings_screen.dart';
 import 'package:booking_agency/screens/profile_screen.dart';
+import 'package:booking_agency/utils/route_transitions.dart';
 
 class RoomListingScreen extends StatefulWidget {
   const RoomListingScreen({super.key});
@@ -12,7 +13,22 @@ class RoomListingScreen extends StatefulWidget {
 
 class _RoomListingScreenState extends State<RoomListingScreen> {
   int _currentIndex = 0;
-
+  // Add this method to handle navigation
+  void _onBottomNavTap(int index) {
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        RouteTransitions.slideFromRight(BookingsScreen()),
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        RouteTransitions.slideFromRight(ProfileScreen()),
+      );
+    } else {
+      setState(() => _currentIndex = index);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,20 +37,30 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
         children: const [
           RoomListingScreenContent(),
           BookingsScreen(),
-          ProfileScreen(), 
+          ProfileScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFFC5A368),
         unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
+        onTap: _onBottomNavTap, // Use the new method here
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Rooms'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month_outlined), activeIcon: Icon(Icons.calendar_month), label: 'Bookings'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Rooms',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
     );

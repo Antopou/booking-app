@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:booking_agency/screens/room_listing_screen.dart';
+import 'package:booking_agency/screens/profile_screen.dart';
+import 'package:booking_agency/utils/route_transitions.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -12,6 +15,21 @@ class _BookingsScreenState extends State<BookingsScreen> {
   int _selectedTab = 0; // 0: Upcoming, 1: Past, 2: Cancelled
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
+
+  // Navigation logic for BottomNavigationBar
+  void _onBottomNavTap(int index) {
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        RouteTransitions.slideFromRight(const RoomListingScreen()),
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        RouteTransitions.slideFromRight(const ProfileScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +61,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
             Text(
               'My Stays',
               style: GoogleFonts.poppins(
-                fontSize: 24, // Matched closer to RoomListing header
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: darkGrey,
                 letterSpacing: -0.5,
@@ -98,13 +116,40 @@ class _BookingsScreenState extends State<BookingsScreen> {
             // --- BOOKING CONTENT ---
             _selectedTab == 0 ? _buildBookingCard() : _buildEmptyState(),
 
-            const SizedBox(height: 120), 
+            const SizedBox(height: 120),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1, // Bookings is active
+        onTap: _onBottomNavTap,
+        selectedItemColor: brandGold,
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Rooms',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }
 
+  // Helper methods remain the same to preserve the UI design
   Widget _buildMiniStat(String title, String value, Color accentColor) {
     return Container(
       width: 130,
@@ -125,20 +170,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title, 
+            title,
             style: GoogleFonts.poppins(
-              color: Colors.grey.shade400, 
-              fontSize: 10, 
+              color: Colors.grey.shade400,
+              fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             )
           ),
           const SizedBox(height: 8),
           Text(
-            value, 
+            value,
             style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600, 
-              fontSize: 20, 
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
               color: accentColor,
             )
           ),
@@ -214,7 +259,6 @@ class _BookingsScreenState extends State<BookingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // UPDATED: Now matches RoomListingScreen style
                 const Text(
                   'Deluxe Ocean View',
                   style: TextStyle(

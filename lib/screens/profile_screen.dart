@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:booking_agency/screens/room_listing_screen.dart';
+import 'package:booking_agency/screens/bookings_screen.dart';
+import 'package:booking_agency/utils/route_transitions.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -7,48 +10,86 @@ class ProfileScreen extends StatelessWidget {
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
 
+  // Logic to handle navigation between screens
+  void _onBottomNavTap(BuildContext context, int index) {
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        RouteTransitions.slideFromRight(const RoomListingScreen()),
+      );
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        RouteTransitions.slideFromRight(const BookingsScreen()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Premium AppBar Header
-        AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          title: Text(
-            'LuxeStay Member',
-            style: GoogleFonts.poppins(
-              color: darkGrey,
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              letterSpacing: 1.2,
-            ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      // Premium AppBar Header
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: Text(
+          'LuxeStay Member',
+          style: GoogleFonts.poppins(
+            color: darkGrey,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            letterSpacing: 1.2,
           ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings_outlined, color: darkGrey),
-              onPressed: () {},
-            ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: darkGrey),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            _buildProfileHeader(),
+            const SizedBox(height: 30),
+            _buildActionSection(context),
           ],
         ),
-        
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                _buildProfileHeader(),
-                const SizedBox(height: 30),
-                _buildActionSection(context),
-              ],
-            ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 2, // Profile is active
+        onTap: (index) => _onBottomNavTap(context, index),
+        selectedItemColor: brandGold,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Rooms',
           ),
-        ),
-      ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
+
+  // --- UI HELPER METHODS ---
 
   Widget _buildProfileHeader() {
     return Container(
@@ -66,7 +107,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: const CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070'),
+                  backgroundImage: NetworkImage(
+                      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070'),
                 ),
               ),
               Container(
@@ -124,8 +166,6 @@ class ProfileScreen extends StatelessWidget {
             _buildMenuItem(Icons.language_outlined, "Language & Currency"),
           ]),
           const SizedBox(height: 40),
-          
-          // Log Out Button with a more refined "Ghost" style
           SizedBox(
             width: double.infinity,
             child: TextButton(
@@ -155,7 +195,7 @@ class ProfileScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
             ),
           ),
-          const SizedBox(height: 100), // Navigation spacing
+          const SizedBox(height: 40), 
         ],
       ),
     );
