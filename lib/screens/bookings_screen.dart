@@ -148,20 +148,19 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  // --- BOTTOM NAVIGATION BAR ---
+  // In bookings_screen.dart, update the _buildBottomNavigationBar method
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
-      currentIndex: 1, // "My Bookings" is active
+      currentIndex: 1, // Bookings tab is active
       onTap: (index) {
         if (index == 0) {
-          // Navigate to Home if not already there
-          if (ModalRoute.of(context)?.settings.name != '/') {
-            Navigator.pushReplacementNamed(context, '/');
-          }
+          // Navigate to Home
+          Navigator.pushReplacementNamed(context, '/');
         } else if (index == 2) {
-          // Handle Profile navigation if needed
-          // You can add profile navigation logic here
+          // Navigate to Profile
+          Navigator.pushReplacementNamed(context, '/profile');
         }
+        // If index is 1 (Bookings), do nothing as we're already here
       },
       selectedItemColor: goldAccent,
       unselectedItemColor: Colors.grey,
