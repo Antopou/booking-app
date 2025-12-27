@@ -1,29 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:booking_agency/screens/room_listing_screen.dart';
-import 'package:booking_agency/screens/bookings_screen.dart';
-import 'package:booking_agency/utils/route_transitions.dart';
+// import 'package:booking_app/screens/room_listing_screen.dart';
+// import 'package:booking_app/screens/bookings_screen.dart';
+// import 'package:booking_app/utils/route_transitions.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
-
-  // Logic to handle navigation between screens
-  void _onBottomNavTap(BuildContext context, int index) {
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        RouteTransitions.slideFromRight(const RoomListingScreen()),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        RouteTransitions.slideFromRight(const BookingsScreen()),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,30 +46,6 @@ class ProfileScreen extends StatelessWidget {
             _buildActionSection(context),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2, // Profile is active
-        onTap: (index) => _onBottomNavTap(context, index),
-        selectedItemColor: brandGold,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Rooms',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

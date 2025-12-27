@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:booking_agency/screens/bookings_screen.dart';
-import 'package:booking_agency/screens/profile_screen.dart';
-import 'package:booking_agency/utils/route_transitions.dart';
+import 'package:booking_app/screens/bookings_screen.dart';
+import 'package:booking_app/screens/profile_screen.dart';
+// import 'package:booking_app/utils/route_transitions.dart';
 
 class RoomListingScreen extends StatefulWidget {
   const RoomListingScreen({super.key});
@@ -13,38 +13,38 @@ class RoomListingScreen extends StatefulWidget {
 
 class _RoomListingScreenState extends State<RoomListingScreen> {
   int _currentIndex = 0;
-  // Add this method to handle navigation
+
   void _onBottomNavTap(int index) {
-    if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        RouteTransitions.slideFromRight(BookingsScreen()),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        RouteTransitions.slideFromRight(ProfileScreen()),
-      );
-    } else {
-      setState(() => _currentIndex = index);
-    }
+    setState(() => _currentIndex = index);
   }
+
   @override
   Widget build(BuildContext context) {
+    Widget content;
+    switch (_currentIndex) {
+      case 1:
+        content = const BookingsScreen();
+        break;
+      case 2:
+        content = const ProfileScreen();
+        break;
+      default:
+        content = const RoomListingScreenContent();
+    }
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          RoomListingScreenContent(),
-          BookingsScreen(),
-          ProfileScreen(),
-        ],
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+        child: KeyedSubtree(
+          key: ValueKey<int>(_currentIndex),
+          child: content,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFFC5A368),
         unselectedItemColor: Colors.grey,
-        onTap: _onBottomNavTap, // Use the new method here
+        onTap: _onBottomNavTap,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

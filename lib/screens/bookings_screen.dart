@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:booking_agency/screens/room_listing_screen.dart';
-import 'package:booking_agency/screens/profile_screen.dart';
-import 'package:booking_agency/utils/route_transitions.dart';
+// import 'package:booking_app/screens/room_listing_screen.dart';
+// import 'package:booking_app/screens/profile_screen.dart';
+// import 'package:booking_app/utils/route_transitions.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -15,21 +15,6 @@ class _BookingsScreenState extends State<BookingsScreen> {
   int _selectedTab = 0; // 0: Upcoming, 1: Past, 2: Cancelled
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
-
-  // Navigation logic for BottomNavigationBar
-  void _onBottomNavTap(int index) {
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        RouteTransitions.slideFromRight(const RoomListingScreen()),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        RouteTransitions.slideFromRight(const ProfileScreen()),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,32 +104,6 @@ class _BookingsScreenState extends State<BookingsScreen> {
             const SizedBox(height: 120),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Bookings is active
-        onTap: _onBottomNavTap,
-        selectedItemColor: brandGold,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Rooms',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

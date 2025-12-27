@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:booking_agency/models/room_model.dart';
-import 'package:booking_agency/theme/app_theme.dart';
+import 'package:booking_app/models/room_model.dart';
+import 'package:booking_app/theme/app_theme.dart';
 
 class RoomDetailsScreen extends StatefulWidget {
   final Room room;

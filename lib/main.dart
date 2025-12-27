@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Import your screens
-import 'package:booking_agency/screens/room_listing_screen.dart';
-import 'package:booking_agency/screens/bookings_screen.dart';
-import 'package:booking_agency/screens/profile_screen.dart';
+import 'package:booking_app/screens/room_listing_screen.dart';
+import 'package:booking_app/screens/bookings_screen.dart';
+import 'package:booking_app/screens/profile_screen.dart';
 
 void main() {
   runApp(const LuxeStayApp());

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:booking_agency/theme/app_theme.dart';
+import 'package:booking_app/theme/app_theme.dart';
 
 class RoomCard extends StatelessWidget {
   final String id;
