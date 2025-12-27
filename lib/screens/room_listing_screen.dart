@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+// Note: Ensure you have 'google_fonts' in your pubspec.yaml
+// Screens imports (Commented out to ensure the code runs immediately)
 import 'package:booking_app/screens/bookings_screen.dart';
 import 'package:booking_app/screens/profile_screen.dart';
-// import 'package:booking_app/utils/route_transitions.dart';
 
 class RoomListingScreen extends StatefulWidget {
   const RoomListingScreen({super.key});
@@ -75,15 +77,24 @@ class RoomListingScreenContent extends StatefulWidget {
 }
 
 class _RoomListingScreenContentState extends State<RoomListingScreenContent> with SingleTickerProviderStateMixin {
+    // Room filter state
+    final List<String> _filters = ["All Rooms", "Penthouse", "Ocean View", "Suites", "Studio"];
+    String _selectedFilter = "All Rooms";
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
 
   late AnimationController _controller;
-  
-  // Animation definitions
   late Animation<double> _heroOpacity;
   late Animation<Offset> _cardSlide;
   late Animation<double> _filterFade;
+
+  // --- SELECTION STATE ---
+  DateTimeRange _selectedDateRange = DateTimeRange(
+    start: DateTime.now(),
+    end: DateTime.now().add(const Duration(days: 2)),
+  );
+  int _adults = 2;
+  int _children = 1;
 
   @override
   void initState() {
@@ -93,17 +104,14 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
       duration: const Duration(milliseconds: 1500),
     );
 
-    // 1. Hero Fades in first
     _heroOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeIn)),
     );
 
-    // 2. Booking Card slides up
     _cardSlide = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7, curve: Curves.easeOutCubic)),
     );
 
-    // 3. Filters fade in last
     _filterFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeIn)),
     );
@@ -117,6 +125,112 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
     super.dispose();
   }
 
+  // --- HELPERS ---
+
+  String _formatDate(DateTime date) => "${date.day} ${_getMonth(date.month)}";
+
+  String _getMonth(int month) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return months[month - 1];
+  }
+
+  Future<void> _selectDateRange(BuildContext context) async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      initialDateRange: _selectedDateRange,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2026),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: brandGold,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: darkGrey,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() => _selectedDateRange = picked);
+    }
+  }
+
+  void _showGuestPicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text("Select Guests", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  _buildCounterRow("Adults", _adults, (val) {
+                    setModalState(() => _adults = val);
+                    setState(() {});
+                  }),
+                  const Divider(),
+                  _buildCounterRow("Children", _children, (val) {
+                    setModalState(() => _children = val);
+                    setState(() {});
+                  }),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: darkGrey,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text("Confirm Guests", style: TextStyle(color: Colors.white)),
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildCounterRow(String title, int value, Function(int) onUpdate) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Row(
+            children: [
+              IconButton(
+                onPressed: value > 0 ? () => onUpdate(value - 1) : null,
+                icon: const Icon(Icons.remove_circle_outline),
+              ),
+              const SizedBox(width: 10),
+              Text("$value", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 10),
+              IconButton(
+                onPressed: () => onUpdate(value + 1),
+                icon: const Icon(Icons.add_circle_outline, color: brandGold),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -128,20 +242,11 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Animated Hero
                 FadeTransition(opacity: _heroOpacity, child: _buildHeroSection()),
-                
-                const SizedBox(height: 250),
-                
+                const SizedBox(height: 130),
                 _buildFeaturesGrid(),
                 _buildRoomSectionHeader(),
-                
-                // Animated Filters
-                FadeTransition(
-                  opacity: _filterFade,
-                  child: _buildFilters(),
-                ),
-                
+                FadeTransition(opacity: _filterFade, child: _buildFilters()),
                 _buildRoomList(),
               ],
             ),
@@ -211,7 +316,6 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
             ),
           ),
         ),
-        // Animated Slide for the Booking Card
         Positioned(
           top: 220,
           left: 20,
@@ -227,15 +331,23 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
               ),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(child: _buildInputBox("CHECK-IN", "28 Dec", Icons.calendar_today_outlined)),
-                      const SizedBox(width: 15),
-                      Expanded(child: _buildInputBox("CHECK-OUT", "30 Dec", Icons.calendar_today_outlined)),
-                    ],
+                  InkWell(
+                    onTap: () => _selectDateRange(context),
+                    child: Row(
+                      children: [
+                        Expanded(child: _buildInputBox("CHECK-IN", _formatDate(_selectedDateRange.start), Icons.calendar_today_outlined)),
+                        const SizedBox(width: 15),
+                        Expanded(child: _buildInputBox("CHECK-OUT", _formatDate(_selectedDateRange.end), Icons.calendar_today_outlined)),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
-                  _buildInputBox("GUESTS", "2 Adults, 1 Child", Icons.people_outline),
+                  _buildInputBox(
+                    "GUESTS",
+                    "$_adults Adults, $_children Child",
+                    Icons.people_outline,
+                    onTap: _showGuestPicker,
+                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -260,9 +372,8 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
     );
   }
 
-  // --- REUSED HELPERS ---
-  Widget _buildInputBox(String label, String value, IconData icon) {
-    return Column(
+  Widget _buildInputBox(String label, String value, IconData icon, {VoidCallback? onTap}) {
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.1)),
@@ -277,6 +388,14 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
         const Divider(),
       ],
     );
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: content,
+      );
+    }
+    return content;
   }
 
   Widget _buildFeaturesGrid() {
@@ -311,21 +430,26 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.only(left: 20, bottom: 20),
       child: Row(
-        children: ["All Rooms", "Penthouse", "Ocean View", "Suites", "Studio"]
+        children: _filters
             .map((filter) => Container(
                   margin: const EdgeInsets.only(right: 10),
                   child: FilterChip(
                     label: Text(filter),
-                    selected: filter == "All Rooms",
-                    onSelected: (val) {},
+                    selected: filter == _selectedFilter,
+                    onSelected: (val) {
+                      setState(() {
+                        _selectedFilter = filter;
+                      });
+                    },
                     backgroundColor: Colors.white,
                     selectedColor: brandGold.withOpacity(0.2),
                     checkmarkColor: brandGold,
-                    labelStyle: TextStyle(color: filter == "All Rooms" ? brandGold : Colors.black54, fontWeight: FontWeight.bold),
+                    labelStyle: TextStyle(color: filter == _selectedFilter ? brandGold : Colors.black54, fontWeight: FontWeight.bold),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                    side: BorderSide(color: filter == "All Rooms" ? brandGold : Colors.grey.shade200),
+                    side: BorderSide(color: filter == _selectedFilter ? brandGold : Colors.grey.shade200),
                   ),
-                )).toList(),
+                ))
+            .toList(),
       ),
     );
   }
