@@ -1,67 +1,133 @@
 import 'package:flutter/material.dart';
+import 'package:booking_agency/screens/bookings_screen.dart';
 
 class RoomListingScreen extends StatefulWidget {
-  const RoomListingScreen({Key? key}) : super(key: key);
+  const RoomListingScreen({super.key});
 
   @override
   State<RoomListingScreen> createState() => _RoomListingScreenState();
 }
 
 class _RoomListingScreenState extends State<RoomListingScreen> {
-  final Color brandGold = const Color(0xFFC5A368);
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      // Transparent App Bar
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: brandGold, borderRadius: BorderRadius.circular(4)),
-                child: const Text('L', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(width: 8),
-              const Text('LuxeStay', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18)),
-            ],
-          ),
-        ),
-        leadingWidth: 150,
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.menu, color: Colors.black)),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          RoomListingScreenContent(),
+          BookingsScreen(),
+          Center(child: Text('Profile')), // Placeholder for Profile
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeroSection(),
-            _buildFeaturesGrid(),
-            _buildRoomSectionHeader(),
-            _buildFilters(),
-            _buildRoomList(),
-          ],
-        ),
-      ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: brandGold,
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          if (index == 1) {
+            // Navigate to Bookings screen using named route
+            Navigator.pushReplacementNamed(context, '/bookings');
+          } else if (index == 2) {
+            // Navigate to Profile screen using named route
+            Navigator.pushReplacementNamed(context, '/profile');
+          } else {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
+        },
+        selectedItemColor: RoomListingScreenContent.brandGold,
         unselectedItemColor: Colors.grey,
-        currentIndex: 0,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Rooms'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month_outlined), label: 'My Bookings'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Rooms',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            label: 'My Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHeroSection() {
+class RoomListingScreenContent extends StatelessWidget {
+  const RoomListingScreenContent({super.key});
+
+  static const Color brandGold = Color(0xFFC5A368);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // App Bar
+        AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: brandGold,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'L',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'LuxeStay',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          leadingWidth: 150,
+          actions: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.menu, color: Colors.black),
+            ),
+          ],
+        ),
+        // Content
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeroSection(),
+                _buildFeaturesGrid(),
+                _buildRoomSectionHeader(),
+                _buildFilters(),
+                _buildRoomList(brandGold),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _buildHeroSection() {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -71,7 +137,9 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
           width: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070'),
+              image: NetworkImage(
+                'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070',
+              ),
               fit: BoxFit.cover,
             ),
           ),
@@ -80,11 +148,20 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
             padding: const EdgeInsets.only(top: 40),
             child: Column(
               children: const [
-                Text('Luxury Awaits You', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                Text(
+                  'Luxury Awaits You',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 SizedBox(height: 8),
-                Text('Experience world-class hospitality in beautifully designed rooms',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70, fontSize: 14)),
+                Text(
+                  'Experience world-class hospitality in beautifully designed rooms',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
               ],
             ),
           ),
@@ -99,7 +176,13 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,10 +206,12 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: brandGold,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -136,9 +221,16 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
     );
   }
 
-  Widget _buildInputLabel(String label) => Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey));
+  static Widget _buildInputLabel(String label) => Text(
+    label,
+    style: const TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.bold,
+      color: Colors.grey,
+    ),
+  );
 
-  Widget _buildInputField(String text, IconData? icon) {
+  static Widget _buildInputField(String text, IconData? icon) {
     return Container(
       margin: const EdgeInsets.only(top: 5),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -157,16 +249,36 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
     );
   }
 
-  Widget _buildFeaturesGrid() {
+  static Widget _buildFeaturesGrid() {
     final features = [
-      {'icon': Icons.shield_outlined, 'title': 'Secure Booking', 'sub': 'Safe & encrypted payments'},
-      {'icon': Icons.workspace_premium_outlined, 'title': 'Best Prices', 'sub': 'Guaranteed lowest rates'},
-      {'icon': Icons.headset_mic_outlined, 'title': '24/7 Support', 'sub': 'Always here to help'},
-      {'icon': Icons.auto_awesome_outlined, 'title': 'Premium Quality', 'sub': 'Luxury accommodations'},
+      {
+        'icon': Icons.shield_outlined,
+        'title': 'Secure Booking',
+        'sub': 'Safe & encrypted payments',
+      },
+      {
+        'icon': Icons.workspace_premium_outlined,
+        'title': 'Best Prices',
+        'sub': 'Guaranteed lowest rates',
+      },
+      {
+        'icon': Icons.headset_mic_outlined,
+        'title': '24/7 Support',
+        'sub': 'Always here to help',
+      },
+      {
+        'icon': Icons.auto_awesome_outlined,
+        'title': 'Premium Quality',
+        'sub': 'Luxury accommodations',
+      },
     ];
 
     return Padding(
-      padding: const EdgeInsets.only(top: 240, left: 20, right: 20), // Compensate for Stack height
+      padding: const EdgeInsets.only(
+        top: 240,
+        left: 20,
+        right: 20,
+      ), // Compensate for Stack height
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -186,11 +298,24 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
                   border: Border.all(color: brandGold.withOpacity(0.3)),
                   color: brandGold.withOpacity(0.05),
                 ),
-                child: Icon(features[index]['icon'] as IconData, color: brandGold, size: 24),
+                child: Icon(
+                  features[index]['icon'] as IconData,
+                  color: brandGold,
+                  size: 24,
+                ),
               ),
               const SizedBox(height: 8),
-              Text(features[index]['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-              Text(features[index]['sub'] as String, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+              Text(
+                features[index]['title'] as String,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                features[index]['sub'] as String,
+                style: const TextStyle(color: Colors.grey, fontSize: 10),
+              ),
             ],
           );
         },
@@ -198,22 +323,27 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
     );
   }
 
-  Widget _buildRoomSectionHeader() {
+  static Widget _buildRoomSectionHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 30),
       child: Column(
         children: [
-          const Text("Our Rooms", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const Text(
+            "Our Rooms",
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
-          Text("Choose from our selection of beautifully designed accommodations",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+          Text(
+            "Choose from our selection of beautifully designed accommodations",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFilters() {
+  static Widget _buildFilters() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
@@ -228,7 +358,10 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
             decoration: InputDecoration(
               hintText: "Search rooms...",
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[200]!)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey[200]!),
+              ),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
           ),
@@ -243,7 +376,7 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
     );
   }
 
-  Widget _buildFilterDropdown(String hint) {
+  static Widget _buildFilterDropdown(String hint) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
@@ -260,7 +393,7 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
     );
   }
 
-  Widget _buildRoomList() {
+  static Widget _buildRoomList(Color brandGold) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -278,12 +411,16 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: Image.network(
-                  index == 0 
-                    ? 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974'
-                    : 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
-                  height: 200, width: double.infinity, fit: BoxFit.cover,
+                  index == 0
+                      ? 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974'
+                      : 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
               ),
               Padding(
@@ -291,21 +428,48 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(index == 0 ? "Deluxe Ocean View" : "Classic Single Room", 
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      index == 0 ? "Deluxe Ocean View" : "Classic Single Room",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    Text("Spacious deluxe room with breathtaking ocean views, features a king-size bed...",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                    Text(
+                      "Spacious deluxe room with breathtaking ocean views, features a king-size bed...",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
                     const SizedBox(height: 15),
                     Row(
                       children: [
-                        const Icon(Icons.people_outline, size: 16, color: Colors.grey),
+                        const Icon(
+                          Icons.people_outline,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
-                        Text("${index == 0 ? 2 : 1} Guests", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(
+                          "${index == 0 ? 2 : 1} Guests",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
                         const SizedBox(width: 15),
-                        const Icon(Icons.square_foot, size: 16, color: Colors.grey),
+                        const Icon(
+                          Icons.square_foot,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
-                        Text("${index == 0 ? 45 : 28} m²", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(
+                          "${index == 0 ? 45 : 28} m²",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
                       ],
                     ),
                     const Divider(height: 30),
@@ -315,9 +479,21 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("From", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                            Text("\$${index == 0 ? 250 : 80}/night", 
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: brandGold)),
+                            const Text(
+                              "From",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            Text(
+                              "\$${index == 0 ? 250 : 80}/night",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: brandGold,
+                              ),
+                            ),
                           ],
                         ),
                         ElevatedButton(
@@ -325,15 +501,17 @@ class _RoomListingScreenState extends State<RoomListingScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1A1A1A),
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                           child: const Text("View Details"),
-                        )
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         );
