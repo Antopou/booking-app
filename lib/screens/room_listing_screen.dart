@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 // Screens imports (Commented out to ensure the code runs immediately)
 import 'package:booking_app/screens/bookings_screen.dart';
 import 'package:booking_app/screens/profile_screen.dart';
+import 'package:booking_app/screens/room_details_screen.dart';
 
 class RoomListingScreen extends StatefulWidget {
   const RoomListingScreen({super.key});
@@ -460,27 +461,122 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
       physics: const NeverScrollableScrollPhysics(),
       itemCount: 2,
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemBuilder: (context, index) => Container(
+      itemBuilder: (context, index) {
+        return _HoverableRoomCard(index: index);
+      },
+    );
+  }
+
+}
+
+class _HoverableRoomCard extends StatefulWidget {
+  final int index;
+  const _HoverableRoomCard({Key? key, required this.index}) : super(key: key);
+
+  @override
+  State<_HoverableRoomCard> createState() => _HoverableRoomCardState();
+}
+
+class _HoverableRoomCardState extends State<_HoverableRoomCard> {
+  bool _hoveringImage = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RoomDetailsScreen(),
+          ),
+        );
+      },
+      child: Container(
         margin: const EdgeInsets.only(bottom: 24),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))]),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          // No shadow, border stays the same
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(20)), child: Image.network(index == 0 ? 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974' : 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974', height: 220, width: double.infinity, fit: BoxFit.cover)),
+            MouseRegion(
+              onEnter: (_) => setState(() => _hoveringImage = true),
+              onExit: (_) => setState(() => _hoveringImage = false),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                child: AnimatedScale(
+                  scale: _hoveringImage ? 1.05 : 1.0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  child: Image.network(
+                    widget.index == 0
+                        ? 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974'
+                        : 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(index == 0 ? "Deluxe Ocean View" : "Classic Single Room", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), Row(children: const [Icon(Icons.star, color: brandGold, size: 18), Text(" 4.9", style: TextStyle(fontWeight: FontWeight.bold))])]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                            widget.index == 0
+                                ? "Deluxe Ocean View"
+                                : "Classic Single Room",
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        Row(children: const [
+                          Icon(Icons.star, color: Color(0xFFC5A368), size: 18),
+                          Text(" 4.9", style: TextStyle(fontWeight: FontWeight.bold))
+                        ])
+                      ]),
                   const SizedBox(height: 8),
-                  Text("Luxury stay with premium amenities and specialized service.", style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                  Text(
+                      "Luxury stay with premium amenities and specialized service.",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14)),
                   const Divider(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      RichText(text: TextSpan(children: [TextSpan(text: "\$${index == 0 ? 250 : 80}", style: const TextStyle(color: darkGrey, fontWeight: FontWeight.bold, fontSize: 20)), const TextSpan(text: " /night", style: TextStyle(color: Colors.grey, fontSize: 14))])),
-                      ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: darkGrey, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))), child: const Text("Book Now")),
+                      RichText(
+                          text: TextSpan(children: [
+                        TextSpan(
+                            text: "\$${widget.index == 0 ? 250 : 80}",
+                            style: const TextStyle(
+                                color: Color(0xFF1A1A1A),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20)),
+                        const TextSpan(
+                            text: " /night",
+                            style:
+                                TextStyle(color: Colors.grey, fontSize: 14))
+                      ])),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                          child: Text(
+                            "Book Now",
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],

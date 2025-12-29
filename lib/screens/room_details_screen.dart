@@ -1,313 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:booking_app/models/room_model.dart';
-import 'package:booking_app/theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RoomDetailsScreen extends StatefulWidget {
-  final Room room;
-
-  const RoomDetailsScreen({super.key, required this.room});
+  const RoomDetailsScreen({super.key});
 
   @override
-  RoomDetailsScreenState createState() => RoomDetailsScreenState();
+  State<RoomDetailsScreen> createState() => _RoomDetailsScreenState();
 }
 
-class RoomDetailsScreenState extends State<RoomDetailsScreen> {
-  final PageController _pageController = PageController();
-  bool _isFavorite = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFavorite = widget.room.isFavorite;
-  }
+class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
+  static const Color brandGold = Color(0xFFC5A368);
+  static const Color darkGrey = Color(0xFF1A1A1A);
+  
+  bool _isHovering = false;
+  int _selectedImageIndex = 0; 
+  
+  final List<String> roomImages = [
+    'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
+    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070',
+    'https://images.unsplash.com/photo-1595571024048-45a59177f538?q=80&w=2070',
+    // 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
+    'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070', // Extra image to show scroll
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // App Bar with images
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            backgroundColor: Colors.white,
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.arrow_back, color: Colors.black),
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            actions: [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: _isFavorite ? Colors.red : Colors.black,
-                  ),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isFavorite = !_isFavorite;
-                  });
-                },
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                children: [
-                  // Image carousel
-                  PageView.builder(
-                    controller: _pageController,
-                    itemCount: widget.room.imageUrls.isNotEmpty 
-                        ? widget.room.imageUrls.length 
-                        : 1,
-                    onPageChanged: (index) {
-                      // Removed _currentPage usage as it no longer exists
-                    },
-                    itemBuilder: (context, index) {
-                      return CachedNetworkImage(
-                        imageUrl: widget.room.imageUrls.isNotEmpty
-                            ? widget.room.imageUrls[index]
-                            : widget.room.imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
-                          child: const Center(child: CircularProgressIndicator()),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.error_outline, color: Colors.grey),
-                        ),
-                      );
-                    },
-                  ),
-                  
-                  // Page indicator
-                  if (widget.room.imageUrls.length > 1)
-                    Positioned(
-                      bottom: 20,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: SmoothPageIndicator(
-                          controller: _pageController,
-                          count: widget.room.imageUrls.length,
-                          effect: const WormEffect(
-                            dotColor: Colors.white54,
-                            activeDotColor: Colors.white,
-                            dotHeight: 8,
-                            dotWidth: 8,
-                            spacing: 4,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Room details
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar(context),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildBackNavigation(),
+            _buildHeroImageSection(),
+            _buildImageGallery(), // Now scrollable
+            Padding(
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Room title and price
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.room.title,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.star, color: Colors.amber, size: 20),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${widget.room.rating} (${(widget.room.rating * 20).toInt()} reviews)',
-                                  style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text(
-                            'From',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            '\$${widget.room.pricePerNight.toInt()}/night',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.accentColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Room type and size
-                  Row(
-                    children: [
-                      _buildFeatureItem(
-                        icon: Icons.king_bed,
-                        label: widget.room.type,
-                      ),
-                      const SizedBox(width: 16),
-                      _buildFeatureItem(
-                        icon: Icons.people_outline,
-                        label: '${widget.room.maxGuests} ${widget.room.maxGuests > 1 ? 'Guests' : 'Guest' }',
-                      ),
-                      const SizedBox(width: 16),
-                      _buildFeatureItem(
-                        icon: Icons.square_foot,
-                        label: '${widget.room.sizeInSqMeters.toInt()} m²',
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Description
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  _buildTitleSection(),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle('About This Room'),
+                  const SizedBox(height: 12),
                   Text(
-                    widget.room.description,
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      height: 1.6,
-                    ),
+                    'Spacious deluxe room with breathtaking ocean views. Features a king-size bed, modern bathroom with rain shower, and private balcony designed for ultimate comfort.',
+                    style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600], height: 1.6),
                   ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Amenities
-                  const Text(
-                    'Amenities',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle('Room Amenities'),
                   const SizedBox(height: 16),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 4,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    itemCount: widget.room.amenities.length,
-                    itemBuilder: (context, index) {
-                      return Row(
-                        children: [
-                          const Icon(Icons.check_circle, color: AppTheme.accentColor, size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            widget.room.amenities[index],
-                            style: const TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  
-                  const SizedBox(height: 80), // Extra space for the bottom button
+                  _buildAmenitiesWrap(),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle('Policies & Information'),
+                  const SizedBox(height: 16),
+                  _buildPolicyCard(Icons.access_time_rounded, 'Check-in/out', 'Check-in: 3:00 PM • Check-out: 11:00 AM'),
+                  _buildPolicyCard(Icons.cancel_outlined, 'Cancellation', 'Free cancellation up to 48 hours before check-in'),
+                  const SizedBox(height: 40),
+                  _buildBookingCard(),
+                  const SizedBox(height: 60),
                 ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      
-      // Book Now button
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-                    color: Colors.black.withAlpha(25),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Handle book now
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Book Now',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
               ),
             ),
           ],
@@ -315,26 +69,270 @@ class RoomDetailsScreenState extends State<RoomDetailsScreen> {
       ),
     );
   }
-  
-  Widget _buildFeatureItem({required IconData icon, required String label}) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppTheme.textSecondary),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppTheme.textSecondary,
-            fontSize: 14,
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(color: brandGold, borderRadius: BorderRadius.circular(8)),
+            child: const Text('L', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
           ),
+          const SizedBox(width: 10),
+          Text('LuxeStay', style: GoogleFonts.poppins(color: darkGrey, fontWeight: FontWeight.bold, fontSize: 18)),
+        ],
+      ),
+      centerTitle: true,
+    );
+  }
+
+  Widget _buildBackNavigation() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 12, bottom: 12),
+      child: InkWell(
+        onTap: () => Navigator.pop(context),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.arrow_back, size: 18, color: Colors.black),
+            const SizedBox(width: 12),
+            Text('Back to Rooms', style: GoogleFonts.poppins(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroImageSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovering = true),
+        onExit: (_) => setState(() => _isHovering = false),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // ZOOM EFFECT: AnimatedScale wraps the image
+              AnimatedScale(
+                scale: _isHovering ? 1.05 : 1.0,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutCubic,
+                child: Image.network(
+                  roomImages[_selectedImageIndex],
+                  height: 350,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              // Smaller Centered Label on Hover
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: _isHovering ? 1.0 : 0.0,
+                child: Container(
+                  height: 350,
+                  width: double.infinity,
+                  color: Colors.black.withAlpha((0.25 * 255).toInt()),
+                  child: Center(
+                    child: Text(
+                      'View All Photos',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18, // Reduced size
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageGallery() {
+    return Container(
+      height: 90,
+      margin: const EdgeInsets.only(top: 16),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal, // Makes images below hero scrollable
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: roomImages.length,
+        itemBuilder: (context, index) {
+          bool isSelected = _selectedImageIndex == index;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedImageIndex = index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(right: 12),
+              width: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? brandGold : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.network(
+                  roomImages[index],
+                  fit: BoxFit.cover,
+                  color: isSelected ? null : Colors.white.withAlpha((0.7 * 255).toInt()),
+                  colorBlendMode: isSelected ? null : BlendMode.modulate,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTitleSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(color: brandGold, borderRadius: BorderRadius.circular(6)),
+          child: Text('Deluxe', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: Text('Deluxe Ocean View', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: darkGrey))),
+            Row(
+              children: [
+                const Icon(Icons.star, color: brandGold, size: 20),
+                const SizedBox(width: 4),
+                Text('4.8', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 4),
+                Text('(127 reviews)', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+              ],
+            ),
+          ],
         ),
       ],
     );
   }
-  
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+
+  Widget _buildSectionTitle(String title) {
+    return Text(title, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: darkGrey));
   }
+
+  Widget _buildAmenitiesWrap() {
+    final amenities = [
+      {'icon': Icons.wifi, 'label': 'Free WiFi'},
+      {'icon': Icons.ac_unit, 'label': 'Air Conditioning'},
+      {'icon': Icons.tv, 'label': 'Smart TV'},
+      {'icon': Icons.coffee_maker, 'label': 'Coffee Maker'},
+      {'icon': Icons.lock_outline, 'label': 'Digital Safe'},
+    ];
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: amenities.map((a) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(a['icon'] as IconData, size: 16, color: brandGold),
+            const SizedBox(width: 8),
+            Text(a['label'] as String, style: GoogleFonts.poppins(fontSize: 13, color: darkGrey, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      )).toList(),
+    );
+  }
+
+  Widget _buildPolicyCard(IconData icon, String title, String subtitle) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[100]!),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(backgroundColor: brandGold.withAlpha((0.1 * 255).toInt()), radius: 18, child: Icon(icon, color: brandGold, size: 18)),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: darkGrey)),
+                Text(subtitle, style: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBookingCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: darkGrey,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('TOTAL PRICE', style: GoogleFonts.poppins(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text('\$250.00', style: GoogleFonts.poppins(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(color: brandGold, borderRadius: BorderRadius.circular(8)),
+                child: Text('Per Night', style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white24, height: 40),
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brandGold,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Text('Book Now', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
