@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'checkout_screen.dart';
+import 'package:booking_app/models/room_model.dart';
+import 'package:booking_app/services/room_service.dart';
 
 class RoomDetailsScreen extends StatefulWidget {
-  const RoomDetailsScreen({super.key});
+  final int roomId;
+  
+  const RoomDetailsScreen({super.key, required this.roomId});
 
   @override
   State<RoomDetailsScreen> createState() => _RoomDetailsScreenState();
@@ -13,31 +17,113 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
   
+  // API state
+  final RoomService _roomService = RoomService();
+  Room? _room;
+  bool _isLoading = true;
+  String? _errorMessage;
+  
   bool _isHovering = false;
   int _selectedImageIndex = 0;
   int _adults = 2;
   int _children = 1;
   
-  final List<String> roomImages = [
-    'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
-    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070',
-    // 'https://images.unsplash.com/photo-1595571024048-45a59177f538?q=80&w=2070',
-    'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
-    'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070', // Extra image to show scroll
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadRoomDetails();
+  }
+  
+  Future<void> _loadRoomDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final room = await _roomService.fetchRoomById(widget.roomId);
+      setState(() {
+        _room = room;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+  
+  List<String> get roomImages => _room?.imageUrls ?? [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: brandGold),
+            )
+          : _errorMessage != null
+              ? _buildErrorView()
+              : _room == null
+                  ? const Center(child: Text('Room not found'))
+                  : _buildContent(),
+    );
+  }
+  
+  Widget _buildErrorView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildHeroImageSection(),
-            _buildImageGallery(),
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading room',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadRoomDetails,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brandGold,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildContent() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (roomImages.isNotEmpty) _buildHeroImageSection(),
+          if (roomImages.length > 1) _buildImageGallery(),
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -48,7 +134,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   _buildSectionTitle('About This Room'),
                   const SizedBox(height: 12),
                   Text(
-                    'Spacious deluxe room with breathtaking ocean views. Features a king-size bed, modern bathroom with rain shower, and private balcony designed for ultimate comfort.',
+                    _room?.description ?? 'No description available',
                     style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600], height: 1.6),
                   ),
                   const SizedBox(height: 32),
@@ -68,8 +154,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -210,20 +295,20 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(color: brandGold, borderRadius: BorderRadius.circular(6)),
-          child: Text('Deluxe', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+          child: Text(_room?.roomTypeName ?? 'Room', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
         ),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(child: Text('Deluxe Ocean View', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: darkGrey))),
+            Expanded(child: Text(_room?.title ?? 'Room', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: darkGrey))),
             Row(
               children: [
                 const Icon(Icons.star, color: brandGold, size: 20),
                 const SizedBox(width: 4),
-                Text('4.8', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('${_room?.rating ?? 0}', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(width: 4),
-                Text('(127 reviews)', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+                Text('(${_room?.totalReviews ?? 0} reviews)', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
               ],
             ),
           ],
@@ -237,13 +322,30 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   }
 
   Widget _buildAmenitiesWrap() {
-    final amenities = [
-      {'icon': Icons.wifi, 'label': 'Free WiFi'},
-      {'icon': Icons.ac_unit, 'label': 'Air Conditioning'},
-      {'icon': Icons.tv, 'label': 'Smart TV'},
-      {'icon': Icons.coffee_maker, 'label': 'Coffee Maker'},
-      {'icon': Icons.lock_outline, 'label': 'Digital Safe'},
-    ];
+    final amenities = <Map<String, dynamic>>[];
+    
+    if (_room?.hasWifi == true) {
+      amenities.add({'icon': Icons.wifi, 'label': 'Free WiFi'});
+    }
+    if (_room?.hasTv == true) {
+      amenities.add({'icon': Icons.tv, 'label': 'Smart TV'});
+    }
+    if (_room?.hasAc == true) {
+      amenities.add({'icon': Icons.ac_unit, 'label': 'Air Conditioning'});
+    }
+    if (_room?.hasBreakfast == true) {
+      amenities.add({'icon': Icons.restaurant, 'label': 'Breakfast'});
+    }
+    if (_room?.hasParking == true) {
+      amenities.add({'icon': Icons.local_parking, 'label': 'Parking'});
+    }
+    
+    if (amenities.isEmpty) {
+      return Text(
+        'Standard room amenities included',
+        style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+      );
+    }
     return Wrap(
       spacing: 12,
       runSpacing: 12,
@@ -295,6 +397,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
 
 
   Widget _buildBookingCard() {
+    final price = _room?.pricePerNight ?? 0;
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
@@ -310,7 +413,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('\$250.00', style: GoogleFonts.poppins(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w600)),
+                  Text('\$$price.00', style: GoogleFonts.poppins(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w600)),
                   Text('avg / night', style: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
@@ -334,8 +437,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => CheckoutScreen(
-                      roomName: 'Deluxe Ocean View',
-                      pricePerNight: 250.00,
+                      roomName: _room?.title ?? 'Room',
+                      pricePerNight: (_room?.pricePerNight ?? 0).toDouble(),
                       adults: _adults,
                       children: _children,
                       nights: 3,

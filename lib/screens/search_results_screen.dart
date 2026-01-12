@@ -32,6 +32,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
   // Available rooms data
   final List<Map<String, dynamic>> _availableRooms = [
     {
+      'id': 1,
       'name': 'Deluxe Ocean View',
       'category': 'Ocean View',
       'price': 250,
@@ -43,6 +44,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
       'size': '45 m²',
     },
     {
+      'id': 2,
       'name': 'Luxury Penthouse Suite',
       'category': 'Penthouse',
       'price': 580,
@@ -54,6 +56,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
       'size': '120 m²',
     },
     {
+      'id': 3,
       'name': 'Executive Suite',
       'category': 'Suites',
       'price': 380,
@@ -65,6 +68,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
       'size': '75 m²',
     },
     {
+      'id': 4,
       'name': 'Coastal Ocean View',
       'category': 'Ocean View',
       'price': 220,
@@ -76,6 +80,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
       'size': '35 m²',
     },
     {
+      'id': 5,
       'name': 'Modern Studio',
       'category': 'Studio',
       'price': 150,
@@ -87,6 +92,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
       'size': '28 m²',
     },
     {
+      'id': 6,
       'name': 'Presidential Penthouse',
       'category': 'Penthouse',
       'price': 890,
@@ -329,7 +335,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const RoomDetailsScreen(),
+            builder: (context) => RoomDetailsScreen(roomId: room['id']),
           ),
         );
       },
@@ -526,7 +532,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const RoomDetailsScreen(),
+                              builder: (context) => RoomDetailsScreen(roomId: room['id']),
                             ),
                           );
                         },

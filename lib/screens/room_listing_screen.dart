@@ -6,6 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:booking_app/screens/room_details_screen.dart';
 import 'package:booking_app/screens/search_results_screen.dart';
 
+// Models and Services
+import 'package:booking_app/models/room_model.dart';
+import 'package:booking_app/services/room_service.dart';
+
 class RoomListingScreen extends StatefulWidget {
   const RoomListingScreen({super.key});
 
@@ -30,11 +34,17 @@ class RoomListingScreenContent extends StatefulWidget {
 }
 
 class _RoomListingScreenContentState extends State<RoomListingScreenContent> with SingleTickerProviderStateMixin {
-    // Room filter state
-    final List<String> _filters = ["All Rooms", "Penthouse", "Ocean View", "Suites", "Studio"];
-    String _selectedFilter = "All Rooms";
+  // Room filter state
+  final List<String> _filters = ["All Rooms"];
+  String _selectedFilter = "All Rooms";
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
+  
+  // API state
+  final RoomService _roomService = RoomService();
+  List<Room> _allRooms = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   late AnimationController _controller;
   late Animation<double> _heroOpacity;
@@ -49,87 +59,38 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
   int _adults = 2;
   int _children = 1;
 
-  // --- ROOM DATA ---
-  final List<Map<String, dynamic>> _allRooms = [
-    {
-      'name': 'Deluxe Ocean View',
-      'category': 'Ocean View',
-      'price': 250,
-      'rating': 4.9,
-      'reviews': 127,
-      'description': 'Spacious deluxe room with breathtaking ocean views and premium amenities.',
-      'image': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
-    },
-    {
-      'name': 'Luxury Penthouse Suite',
-      'category': 'Penthouse',
-      'price': 580,
-      'rating': 5.0,
-      'reviews': 89,
-      'description': 'Top-floor penthouse with panoramic city views and exclusive services.',
-      'image': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070',
-    },
-    {
-      'name': 'Executive Suite',
-      'category': 'Suites',
-      'price': 380,
-      'rating': 4.8,
-      'reviews': 156,
-      'description': 'Elegant suite with separate living area and modern workspace.',
-      'image': 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
-    },
-    {
-      'name': 'Coastal Ocean View',
-      'category': 'Ocean View',
-      'price': 220,
-      'rating': 4.7,
-      'reviews': 94,
-      'description': 'Comfortable room with stunning ocean views and private balcony.',
-      'image': 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070',
-    },
-    {
-      'name': 'Modern Studio',
-      'category': 'Studio',
-      'price': 150,
-      'rating': 4.6,
-      'reviews': 203,
-      'description': 'Compact studio with contemporary design and all essential amenities.',
-      'image': 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=2070',
-    },
-    {
-      'name': 'Presidential Penthouse',
-      'category': 'Penthouse',
-      'price': 890,
-      'rating': 5.0,
-      'reviews': 42,
-      'description': 'Ultimate luxury penthouse with private terrace and butler service.',
-      'image': 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=2070',
-    },
-    {
-      'name': 'Family Suite',
-      'category': 'Suites',
-      'price': 420,
-      'rating': 4.8,
-      'reviews': 178,
-      'description': 'Spacious suite perfect for families with connecting rooms available.',
-      'image': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=2070',
-    },
-    {
-      'name': 'Designer Studio',
-      'category': 'Studio',
-      'price': 175,
-      'rating': 4.7,
-      'reviews': 145,
-      'description': 'Stylishly designed studio with artistic touches and modern comfort.',
-      'image': 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000',
-    },
-  ];
-
-  List<Map<String, dynamic>> get _filteredRooms {
+  List<Room> get _filteredRooms {
     if (_selectedFilter == 'All Rooms') {
       return _allRooms;
     }
-    return _allRooms.where((room) => room['category'] == _selectedFilter).toList();
+    return _allRooms.where((room) => room.roomTypeName == _selectedFilter).toList();
+  }
+  
+  Future<void> _loadRooms() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final rooms = await _roomService.fetchRooms();
+      
+      // Extract unique room types for filters
+      final Set<String> roomTypes = rooms.map((room) => room.roomTypeName).toSet();
+      
+      setState(() {
+        _allRooms = rooms;
+        _filters.clear();
+        _filters.add('All Rooms');
+        _filters.addAll(roomTypes);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -153,6 +114,9 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
     );
 
     _controller.forward();
+    
+    // Load rooms from API
+    _loadRooms();
   }
 
   @override
@@ -539,6 +503,55 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
   }
 
   Widget _buildRoomList() {
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(color: brandGold),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading rooms',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadRooms,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brandGold,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    }
+    
     final rooms = _filteredRooms;
     
     return AnimatedSwitcher(
@@ -591,7 +604,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
               itemCount: rooms.length,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemBuilder: (context, index) {
-                return _HoverableRoomCard(roomData: rooms[index]);
+                return _HoverableRoomCard(roomData: rooms[index].toMap());
               },
             ),
     );
@@ -612,14 +625,19 @@ class _HoverableRoomCardState extends State<_HoverableRoomCard> {
 
   @override
   Widget build(BuildContext context) {
+    final roomData = widget.roomData;
+    final roomId = roomData['id'] as int?;
+    
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RoomDetailsScreen(),
-          ),
-        );
+        if (roomId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RoomDetailsScreen(roomId: roomId),
+            ),
+          );
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),

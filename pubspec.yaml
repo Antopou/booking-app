@@ -40,6 +40,9 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   flutter_rating_bar: ^4.0.1
   percent_indicator: ^4.2.3
+  
+  # API & Networking
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
