@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'checkout_screen.dart';
 
 class RoomDetailsScreen extends StatefulWidget {
   const RoomDetailsScreen({super.key});
@@ -13,7 +14,9 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   static const Color darkGrey = Color(0xFF1A1A1A);
   
   bool _isHovering = false;
-  int _selectedImageIndex = 0; 
+  int _selectedImageIndex = 0;
+  int _adults = 2;
+  int _children = 1;
   
   final List<String> roomImages = [
     'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
@@ -33,9 +36,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildBackNavigation(),
             _buildHeroImageSection(),
-            _buildImageGallery(), // Now scrollable
+            _buildImageGallery(),
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -75,7 +77,10 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       backgroundColor: Colors.white,
       elevation: 0,
       scrolledUnderElevation: 0,
-      automaticallyImplyLeading: false,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () => Navigator.pop(context),
+      ),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -92,70 +97,68 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     );
   }
 
-  Widget _buildBackNavigation() {
+  Widget _buildHeroImageSection() {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 12, bottom: 12),
-      child: InkWell(
-        onTap: () => Navigator.pop(context),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.arrow_back, size: 18, color: Colors.black),
-            const SizedBox(width: 12),
-            Text('Back to Rooms', style: GoogleFonts.poppins(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500)),
-          ],
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () => _openPhotoGallery(context),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _isHovering = true),
+          onExit: (_) => setState(() => _isHovering = false),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // ZOOM EFFECT: AnimatedScale wraps the image
+                AnimatedScale(
+                  scale: _isHovering ? 1.05 : 1.0,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                  child: Image.network(
+                    roomImages[_selectedImageIndex],
+                    height: 350,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                // Smaller Centered Label on Hover
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: _isHovering ? 1.0 : 0.0,
+                  child: Container(
+                    height: 350,
+                    width: double.infinity,
+                    color: Colors.black.withAlpha((0.25 * 255).toInt()),
+                    child: Center(
+                      child: Text(
+                        'View All Photos',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 18, // Reduced size
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeroImageSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _isHovering = true),
-        onExit: (_) => setState(() => _isHovering = false),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // ZOOM EFFECT: AnimatedScale wraps the image
-              AnimatedScale(
-                scale: _isHovering ? 1.05 : 1.0,
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCubic,
-                child: Image.network(
-                  roomImages[_selectedImageIndex],
-                  height: 350,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              // Smaller Centered Label on Hover
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: _isHovering ? 1.0 : 0.0,
-                child: Container(
-                  height: 350,
-                  width: double.infinity,
-                  color: Colors.black.withAlpha((0.25 * 255).toInt()),
-                  child: Center(
-                    child: Text(
-                      'View All Photos',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 18, // Reduced size
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+  void _openPhotoGallery(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => _PhotoGalleryScreen(
+          images: roomImages,
+          initialIndex: _selectedImageIndex,
         ),
       ),
     );
@@ -311,16 +314,35 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   Text('avg / night', style: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
-              const Icon(Icons.info_outline, color: Colors.grey, size: 20),
+              IconButton(
+                onPressed: _showPriceBreakdown,
+                icon: const Icon(Icons.info_outline, color: Colors.grey, size: 20),
+              ),
             ],
           ),
           const SizedBox(height: 24),
-          _buildDarkInput('GUESTS', '2 Adults, 1 Child', Icons.people_outline),
+          GestureDetector(
+            onTap: _showGuestPicker,
+            child: _buildDarkInput('GUESTS', '$_adults Adults, $_children Child', Icons.people_outline),
+          ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity, height: 60,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutScreen(
+                      roomName: 'Deluxe Ocean View',
+                      pricePerNight: 250.00,
+                      adults: _adults,
+                      children: _children,
+                      nights: 3,
+                    ),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: brandGold,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -351,6 +373,267 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           ),
           const Spacer(),
           const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 18),
+        ],
+      ),
+    );
+  }
+
+  void _showGuestPicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Select Guests", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  _buildCounterRow("Adults", _adults, (val) {
+                    setModalState(() => _adults = val);
+                    setState(() {});
+                  }),
+                  const Divider(),
+                  _buildCounterRow("Children", _children, (val) {
+                    setModalState(() => _children = val);
+                    setState(() {});
+                  }),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: darkGrey,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text("Confirm Guests", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showPriceBreakdown() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Price Breakdown', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildPriceRow('Room rate', '\$250.00'),
+            _buildPriceRow('Service fee', '\$25.00'),
+            _buildPriceRow('Taxes', '\$30.00'),
+            const Divider(height: 24),
+            _buildPriceRow('Total per night', '\$305.00', isBold: true),
+            const SizedBox(height: 12),
+            Text(
+              '* Final price may vary based on length of stay and booking dates',
+              style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[600], fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CLOSE', style: GoogleFonts.poppins(color: brandGold, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceRow(String label, String amount, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: isBold ? 15 : 14,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: isBold ? darkGrey : Colors.grey[700],
+            ),
+          ),
+          Text(
+            amount,
+            style: GoogleFonts.poppins(
+              fontSize: isBold ? 15 : 14,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+              color: isBold ? brandGold : darkGrey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCounterRow(String title, int value, Function(int) onUpdate) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500)),
+          Row(
+            children: [
+              IconButton(
+                onPressed: value > 0 ? () => onUpdate(value - 1) : null,
+                icon: const Icon(Icons.remove_circle_outline),
+              ),
+              const SizedBox(width: 10),
+              Text("$value", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 10),
+              IconButton(
+                onPressed: () => onUpdate(value + 1),
+                icon: const Icon(Icons.add_circle_outline, color: brandGold),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// Full-screen Photo Gallery
+class _PhotoGalleryScreen extends StatefulWidget {
+  final List<String> images;
+  final int initialIndex;
+
+  const _PhotoGalleryScreen({
+    required this.images,
+    required this.initialIndex,
+  });
+
+  @override
+  State<_PhotoGalleryScreen> createState() => _PhotoGalleryScreenState();
+}
+
+class _PhotoGalleryScreenState extends State<_PhotoGalleryScreen> {
+  late PageController _pageController;
+  late int _currentIndex;
+  static const Color brandGold = Color(0xFFC5A368);
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Full-screen PageView for images
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemCount: widget.images.length,
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: Image.network(
+                    widget.images[index],
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              );
+            },
+          ),
+          
+          // Top bar with close button and counter
+          SafeArea(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.7),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${_currentIndex + 1} / ${widget.images.length}',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48), // Balance the layout
+                ],
+              ),
+            ),
+          ),
+          
+          // Bottom image indicators
+          Positioned(
+            bottom: 40,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.images.length,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 8,
+                  width: _currentIndex == index ? 24 : 8,
+                  decoration: BoxDecoration(
+                    color: _currentIndex == index ? brandGold : Colors.white.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

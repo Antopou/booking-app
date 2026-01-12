@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Note: Ensure you have 'google_fonts' in your pubspec.yaml
-// Screens imports (Commented out to ensure the code runs immediately)
-import 'package:booking_app/screens/bookings_screen.dart';
-import 'package:booking_app/screens/profile_screen.dart';
+// Screens imports
 import 'package:booking_app/screens/room_details_screen.dart';
+import 'package:booking_app/screens/search_results_screen.dart';
 
 class RoomListingScreen extends StatefulWidget {
   const RoomListingScreen({super.key});
@@ -15,57 +14,10 @@ class RoomListingScreen extends StatefulWidget {
 }
 
 class _RoomListingScreenState extends State<RoomListingScreen> {
-  int _currentIndex = 0;
-
-  void _onBottomNavTap(int index) {
-    setState(() => _currentIndex = index);
-  }
-
   @override
   Widget build(BuildContext context) {
-    Widget content;
-    switch (_currentIndex) {
-      case 1:
-        content = const BookingsScreen();
-        break;
-      case 2:
-        content = const ProfileScreen();
-        break;
-      default:
-        content = const RoomListingScreenContent();
-    }
-    return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-        child: KeyedSubtree(
-          key: ValueKey<int>(_currentIndex),
-          child: content,
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        selectedItemColor: const Color(0xFFC5A368),
-        unselectedItemColor: Colors.grey,
-        onTap: _onBottomNavTap,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Rooms',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
+    return const Scaffold(
+      body: RoomListingScreenContent(),
     );
   }
 }
@@ -96,6 +48,89 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
   );
   int _adults = 2;
   int _children = 1;
+
+  // --- ROOM DATA ---
+  final List<Map<String, dynamic>> _allRooms = [
+    {
+      'name': 'Deluxe Ocean View',
+      'category': 'Ocean View',
+      'price': 250,
+      'rating': 4.9,
+      'reviews': 127,
+      'description': 'Spacious deluxe room with breathtaking ocean views and premium amenities.',
+      'image': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
+    },
+    {
+      'name': 'Luxury Penthouse Suite',
+      'category': 'Penthouse',
+      'price': 580,
+      'rating': 5.0,
+      'reviews': 89,
+      'description': 'Top-floor penthouse with panoramic city views and exclusive services.',
+      'image': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070',
+    },
+    {
+      'name': 'Executive Suite',
+      'category': 'Suites',
+      'price': 380,
+      'rating': 4.8,
+      'reviews': 156,
+      'description': 'Elegant suite with separate living area and modern workspace.',
+      'image': 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
+    },
+    {
+      'name': 'Coastal Ocean View',
+      'category': 'Ocean View',
+      'price': 220,
+      'rating': 4.7,
+      'reviews': 94,
+      'description': 'Comfortable room with stunning ocean views and private balcony.',
+      'image': 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070',
+    },
+    {
+      'name': 'Modern Studio',
+      'category': 'Studio',
+      'price': 150,
+      'rating': 4.6,
+      'reviews': 203,
+      'description': 'Compact studio with contemporary design and all essential amenities.',
+      'image': 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=2070',
+    },
+    {
+      'name': 'Presidential Penthouse',
+      'category': 'Penthouse',
+      'price': 890,
+      'rating': 5.0,
+      'reviews': 42,
+      'description': 'Ultimate luxury penthouse with private terrace and butler service.',
+      'image': 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=2070',
+    },
+    {
+      'name': 'Family Suite',
+      'category': 'Suites',
+      'price': 420,
+      'rating': 4.8,
+      'reviews': 178,
+      'description': 'Spacious suite perfect for families with connecting rooms available.',
+      'image': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=2070',
+    },
+    {
+      'name': 'Designer Studio',
+      'category': 'Studio',
+      'price': 175,
+      'rating': 4.7,
+      'reviews': 145,
+      'description': 'Stylishly designed studio with artistic touches and modern comfort.',
+      'image': 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000',
+    },
+  ];
+
+  List<Map<String, dynamic>> get _filteredRooms {
+    if (_selectedFilter == 'All Rooms') {
+      return _allRooms;
+    }
+    return _allRooms.where((room) => room['category'] == _selectedFilter).toList();
+  }
 
   @override
   void initState() {
@@ -140,7 +175,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
       context: context,
       initialDateRange: _selectedDateRange,
       firstDate: DateTime.now(),
-      lastDate: DateTime(2026),
+      lastDate: DateTime(2027, 12, 31),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -211,7 +246,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500)),
           Row(
             children: [
               IconButton(
@@ -219,7 +254,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
                 icon: const Icon(Icons.remove_circle_outline),
               ),
               const SizedBox(width: 10),
-              Text("$value", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text("$value", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(width: 10),
               IconButton(
                 onPressed: () => onUpdate(value + 1),
@@ -244,7 +279,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 FadeTransition(opacity: _heroOpacity, child: _buildHeroSection()),
-                const SizedBox(height: 130),
+                const SizedBox(height: 50),
                 _buildFeaturesGrid(),
                 _buildRoomSectionHeader(),
                 FadeTransition(opacity: _filterFade, child: _buildFilters()),
@@ -280,11 +315,11 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
   }
 
   Widget _buildHeroSection() {
-    return Stack(
-      clipBehavior: Clip.none,
+    return Column(
       children: [
+        // The Image part
         Container(
-          height: 350,
+          height: 300,
           width: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
@@ -317,54 +352,97 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
             ),
           ),
         ),
-        Positioned(
-          top: 220,
-          left: 20,
-          right: 20,
-          child: SlideTransition(
-            position: _cardSlide,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
+        // The Search Card part
+        Transform.translate(
+          offset: const Offset(0, -80), // Pull the card UP into the image
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SlideTransition(
+              position: _cardSlide,
+              child: Material(
+                elevation: 8,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 10))],
-              ),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
               child: Column(
                 children: [
-                  InkWell(
-                    onTap: () => _selectDateRange(context),
-                    child: Row(
-                      children: [
-                        Expanded(child: _buildInputBox("CHECK-IN", _formatDate(_selectedDateRange.start), Icons.calendar_today_outlined)),
-                        const SizedBox(width: 15),
-                        Expanded(child: _buildInputBox("CHECK-OUT", _formatDate(_selectedDateRange.end), Icons.calendar_today_outlined)),
-                      ],
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            // print('Check-in tapped');
+                            _selectDateRange(context);
+                          },
+                          child: _buildInputBox("CHECK-IN", _formatDate(_selectedDateRange.start), Icons.calendar_today_outlined),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            // print('Check-out tapped');
+                            _selectDateRange(context);
+                          },
+                          child: _buildInputBox("CHECK-OUT", _formatDate(_selectedDateRange.end), Icons.calendar_today_outlined),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
-                  _buildInputBox(
-                    "GUESTS",
-                    "$_adults Adults, $_children Child",
-                    Icons.people_outline,
-                    onTap: _showGuestPicker,
+                  GestureDetector(
+                    onTap: () {
+                      // print('Guests tapped');
+                      _showGuestPicker();
+                    },
+                    child: _buildInputBox(
+                      "GUESTS",
+                      "$_adults Adults, $_children Child",
+                      Icons.people_outline,
+                    ),
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: brandGold,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  InkWell(
+                    onTap: () {
+                      print('Search Availability button clicked!');
+                      print('Date range: ${_selectedDateRange.start} to ${_selectedDateRange.end}');
+                      print('Adults: $_adults, Children: $_children');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SearchResultsScreen(
+                            dateRange: _selectedDateRange,
+                            adults: _adults,
+                            children: _children,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 55,
+                      decoration: BoxDecoration(
+                        color: brandGold,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text("Search Availability", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Search Availability",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
                 ],
+              ),
+                ),
               ),
             ),
           ),
@@ -373,30 +451,24 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
     );
   }
 
-  Widget _buildInputBox(String label, String value, IconData icon, {VoidCallback? onTap}) {
-    final content = Column(
+  Widget _buildInputBox(String label, String value, IconData icon) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.1)),
+        Text(label, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.1)),
         const SizedBox(height: 8),
         Row(
           children: [
             Icon(icon, size: 18, color: brandGold),
             const SizedBox(width: 10),
-            Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            Expanded(
+              child: Text(value, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
+            ),
           ],
         ),
         const Divider(),
       ],
     );
-    if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: content,
-      );
-    }
-    return content;
   }
 
   Widget _buildFeaturesGrid() {
@@ -417,14 +489,14 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
           children: [
             CircleAvatar(backgroundColor: brandGold.withOpacity(0.1), child: Icon(features[index]['icon'] as IconData, color: brandGold, size: 20)),
             const SizedBox(width: 12),
-            Expanded(child: Text(features[index]['title'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+            Expanded(child: Text(features[index]['title'] as String, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold))),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRoomSectionHeader() => const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), child: Text("Featured Accommodations", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)));
+  Widget _buildRoomSectionHeader() => Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), child: Text("Featured Accommodations", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold)));
 
   Widget _buildFilters() {
     return SingleChildScrollView(
@@ -434,8 +506,19 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
         children: _filters
             .map((filter) => Container(
                   margin: const EdgeInsets.only(right: 10),
+                  width: 110,
                   child: FilterChip(
-                    label: Text(filter),
+                    label: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        filter,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: filter == _selectedFilter ? brandGold : Colors.black54,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     selected: filter == _selectedFilter,
                     onSelected: (val) {
                       setState(() {
@@ -456,22 +539,69 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
   }
 
   Widget _buildRoomList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 2,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemBuilder: (context, index) {
-        return _HoverableRoomCard(index: index);
+    final rooms = _filteredRooms;
+    
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      switchInCurve: Curves.easeInOut,
+      switchOutCurve: Curves.easeInOut,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.05),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
       },
+      child: rooms.isEmpty
+          ? Padding(
+              key: const ValueKey('empty'),
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                children: [
+                  Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No rooms found',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Try selecting a different category',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              key: ValueKey(_selectedFilter),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: rooms.length,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemBuilder: (context, index) {
+                return _HoverableRoomCard(roomData: rooms[index]);
+              },
+            ),
     );
   }
 
 }
 
 class _HoverableRoomCard extends StatefulWidget {
-  final int index;
-  const _HoverableRoomCard({required this.index});
+  final Map<String, dynamic> roomData;
+  const _HoverableRoomCard({required this.roomData});
 
   @override
   State<_HoverableRoomCard> createState() => _HoverableRoomCardState();
@@ -511,9 +641,7 @@ class _HoverableRoomCardState extends State<_HoverableRoomCard> {
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOut,
                   child: Image.network(
-                    widget.index == 0
-                        ? 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974'
-                        : 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
+                    widget.roomData['image'],
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -529,51 +657,56 @@ class _HoverableRoomCardState extends State<_HoverableRoomCard> {
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            widget.index == 0
-                                ? "Deluxe Ocean View"
-                                : "Classic Single Room",
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        Row(children: const [
-                          Icon(Icons.star, color: Color(0xFFC5A368), size: 18),
-                          Text(" 4.9", style: TextStyle(fontWeight: FontWeight.bold))
+                        Expanded(
+                          child: Text(
+                              widget.roomData['name'],
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                        ),
+                        Row(children: [
+                          const Icon(Icons.star, color: Color(0xFFC5A368), size: 18),
+                          Text(" ${widget.roomData['rating']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(" (${widget.roomData['reviews']})", style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                         ])
                       ]),
                   const SizedBox(height: 8),
                   Text(
-                      "Luxury stay with premium amenities and specialized service.",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                      widget.roomData['description'],
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
                   const Divider(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       RichText(
                           text: TextSpan(children: [
                         TextSpan(
-                            text: "\$${widget.index == 0 ? 250 : 80}",
-                            style: const TextStyle(
-                                color: Color(0xFF1A1A1A),
+                            text: "\$${widget.roomData['price']}",
+                            style: GoogleFonts.poppins(
+                                color: const Color(0xFF1A1A1A),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20)),
-                        const TextSpan(
+                        TextSpan(
                             text: " /night",
-                            style:
-                                TextStyle(color: Colors.grey, fontSize: 14))
+                            style: GoogleFonts.poppins(
+                                color: Colors.grey, fontSize: 14))
                       ])),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.black,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           child: Text(
                             "Book Now",
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                                letterSpacing: 1.0),
                           ),
                         ),
                       ),

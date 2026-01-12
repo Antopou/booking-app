@@ -273,7 +273,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                       ],
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => _showManageBookingSheet(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: darkGrey,
                         foregroundColor: Colors.white,
@@ -353,6 +353,849 @@ class _BookingsScreenState extends State<BookingsScreen> {
           Text('Your luxury stays will appear here.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(color: Colors.grey, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  void _showManageBookingSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildManageBookingSheet(),
+    );
+  }
+
+  Widget _buildManageBookingSheet() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Manage Booking',
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: darkGrey,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Booking Info Card
+                  _buildInfoCard(),
+                  const SizedBox(height: 24),
+
+                  // Quick Actions
+                  Text(
+                    'Quick Actions',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: darkGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  _buildActionButton(
+                    icon: Icons.edit_calendar_outlined,
+                    title: 'Modify Dates',
+                    subtitle: 'Change check-in or check-out dates',
+                    color: brandGold,
+                    onTap: () => _showModifyDatesDialog(context),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildActionButton(
+                    icon: Icons.group_outlined,
+                    title: 'Update Guests',
+                    subtitle: 'Change number of guests',
+                    color: Colors.blue,
+                    onTap: () => _showUpdateGuestsDialog(context),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildActionButton(
+                    icon: Icons.receipt_long_outlined,
+                    title: 'View Confirmation',
+                    subtitle: 'Booking ID: #BK-2025-0142',
+                    color: Colors.green,
+                    onTap: () => _showConfirmationDialog(context),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildActionButton(
+                    icon: Icons.support_agent_outlined,
+                    title: 'Contact Support',
+                    subtitle: 'Get help with your booking',
+                    color: Colors.purple,
+                    onTap: () => _showContactSupportDialog(context),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Danger Zone
+                  Text(
+                    'Cancellation',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: darkGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  _buildActionButton(
+                    icon: Icons.cancel_outlined,
+                    title: 'Cancel Booking',
+                    subtitle: 'Free cancellation until 26 Dec 2025',
+                    color: Colors.red,
+                    onTap: () => _showCancelBookingDialog(context),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [brandGold.withOpacity(0.1), brandGold.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: brandGold.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.hotel_outlined, color: brandGold, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Deluxe Ocean View',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: darkGrey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CHECK-IN',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '28 Dec 2025',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: darkGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CHECK-OUT',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '29 Dec 2025',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: darkGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.people_outline, size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 8),
+              Text(
+                '2 Adults, 1 Child',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: darkGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showModifyDatesDialog(BuildContext context) {
+    DateTime checkInDate = DateTime(2025, 12, 28);
+    DateTime checkOutDate = DateTime(2025, 12, 29);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Modify Dates', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select new check-in and check-out dates',
+                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 20),
+                
+                // Check-in Date Selector
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: checkInDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2026, 12, 31),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(primary: brandGold),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (picked != null) {
+                      setDialogState(() {
+                        checkInDate = picked;
+                        if (checkOutDate.isBefore(checkInDate.add(const Duration(days: 1)))) {
+                          checkOutDate = checkInDate.add(const Duration(days: 1));
+                        }
+                      });
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today, color: brandGold, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'CHECK-IN',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${checkInDate.day} ${_getMonthName(checkInDate.month)} ${checkInDate.year}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.edit_calendar, color: Colors.grey.shade400, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Check-out Date Selector
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: checkOutDate,
+                      firstDate: checkInDate.add(const Duration(days: 1)),
+                      lastDate: DateTime(2026, 12, 31),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(primary: brandGold),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (picked != null) {
+                      setDialogState(() => checkOutDate = picked);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today, color: brandGold, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'CHECK-OUT',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${checkOutDate.day} ${_getMonthName(checkOutDate.month)} ${checkOutDate.year}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.edit_calendar, color: Colors.grey.shade400, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Duration Info
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: brandGold.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.nights_stay, color: brandGold, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${checkOutDate.difference(checkInDate).inDays} night(s) • Estimated: \$${checkOutDate.difference(checkInDate).inDays * 250}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: darkGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('CANCEL', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Dates updated successfully! New check-in: ${checkInDate.day} ${_getMonthName(checkInDate.month)}',
+                      style: GoogleFonts.poppins(),
+                    ),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brandGold,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: Text('SAVE CHANGES', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 12)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
+  }
+
+  void _showUpdateGuestsDialog(BuildContext context) {
+    int adults = 2;
+    int children = 1;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Update Guests', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Adjust the number of guests for your stay',
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 24),
+              
+              // Adults Counter
+              _buildGuestCounter(
+                label: 'Adults',
+                subtitle: 'Ages 13 or above',
+                count: adults,
+                onDecrement: () {
+                  if (adults > 1) {
+                    setDialogState(() => adults--);
+                  }
+                },
+                onIncrement: () {
+                  if (adults < 10) {
+                    setDialogState(() => adults++);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              // Children Counter
+              _buildGuestCounter(
+                label: 'Children',
+                subtitle: 'Ages 0-12',
+                count: children,
+                onDecrement: () {
+                  if (children > 0) {
+                    setDialogState(() => children--);
+                  }
+                },
+                onIncrement: () {
+                  if (children < 10) {
+                    setDialogState(() => children++);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              // Total Summary
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: brandGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.people, color: brandGold, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Total: ${adults + children} guest${adults + children != 1 ? 's' : ''}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: darkGrey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('CANCEL', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Guest count updated: $adults Adult${adults != 1 ? 's' : ''}, $children Child${children != 1 ? 'ren' : ''}',
+                      style: GoogleFonts.poppins(),
+                    ),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brandGold,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: Text('SAVE CHANGES', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 12)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGuestCounter({
+    required String label,
+    required String subtitle,
+    required int count,
+    required VoidCallback onDecrement,
+    required VoidCallback onIncrement,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: darkGrey,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: onDecrement,
+                icon: const Icon(Icons.remove_circle_outline),
+                color: count <= (label == 'Adults' ? 1 : 0) ? Colors.grey.shade300 : brandGold,
+                iconSize: 28,
+              ),
+              Container(
+                width: 40,
+                alignment: Alignment.center,
+                child: Text(
+                  '$count',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: darkGrey,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onIncrement,
+                icon: const Icon(Icons.add_circle_outline),
+                color: count >= 10 ? Colors.grey.shade300 : brandGold,
+                iconSize: 28,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green, size: 28),
+            const SizedBox(width: 12),
+            Text('Booking Confirmed', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildConfirmationRow('Booking ID', '#BK-2025-0142'),
+            _buildConfirmationRow('Room', 'Deluxe Ocean View'),
+            _buildConfirmationRow('Check-in', '28 Dec 2025, 3:00 PM'),
+            _buildConfirmationRow('Check-out', '29 Dec 2025, 11:00 AM'),
+            _buildConfirmationRow('Guests', '2 Adults, 1 Child'),
+            _buildConfirmationRow('Total', '\$250.00'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CLOSE', style: GoogleFonts.poppins(color: brandGold, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmationRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: GoogleFonts.poppins(color: Colors.grey.shade600, fontSize: 13)),
+          Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  void _showContactSupportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Contact Support', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.phone, color: brandGold),
+              title: Text('Call Us', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              subtitle: Text('+1 (800) 555-LUXE', style: GoogleFonts.poppins(fontSize: 12)),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: Icon(Icons.email, color: brandGold),
+              title: Text('Email Support', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              subtitle: Text('support@luxestay.com', style: GoogleFonts.poppins(fontSize: 12)),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: Icon(Icons.chat_bubble_outline, color: brandGold),
+              title: Text('Live Chat', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              subtitle: Text('Available 24/7', style: GoogleFonts.poppins(fontSize: 12)),
+              onTap: () {},
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CLOSE', style: GoogleFonts.poppins(color: brandGold, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCancelBookingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Cancel Booking?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to cancel this booking?',
+              style: GoogleFonts.poppins(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.green.shade700, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Free cancellation - Full refund will be processed within 3-5 business days',
+                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('KEEP BOOKING', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Booking cancelled successfully', style: GoogleFonts.poppins()),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            child: Text('CANCEL BOOKING', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
+          ),
         ],
       ),
     );
