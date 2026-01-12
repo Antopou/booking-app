@@ -471,7 +471,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
 
 class _HoverableRoomCard extends StatefulWidget {
   final int index;
-  const _HoverableRoomCard({Key? key, required this.index}) : super(key: key);
+  const _HoverableRoomCard({required this.index});
 
   @override
   State<_HoverableRoomCard> createState() => _HoverableRoomCardState();

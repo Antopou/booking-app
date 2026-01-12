@@ -18,8 +18,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   final List<String> roomImages = [
     'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
     'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070',
-    'https://images.unsplash.com/photo-1595571024048-45a59177f538?q=80&w=2070',
-    // 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
+    // 'https://images.unsplash.com/photo-1595571024048-45a59177f538?q=80&w=2070',
+    'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
     'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070', // Extra image to show scroll
   ];
 
@@ -290,12 +290,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     );
   }
 
+
   Widget _buildBookingCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: darkGrey,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [BoxShadow(color: brandGold.withOpacity(0.3), blurRadius: 25, offset: const Offset(0, 15))],
       ),
       child: Column(
         children: [
@@ -305,29 +307,26 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('TOTAL PRICE', style: GoogleFonts.poppins(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('\$250.00', style: GoogleFonts.poppins(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                  Text('\$250.00', style: GoogleFonts.poppins(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w600)),
+                  Text('avg / night', style: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: brandGold, borderRadius: BorderRadius.circular(8)),
-                child: Text('Per Night', style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-              ),
+              const Icon(Icons.info_outline, color: Colors.grey, size: 20),
             ],
           ),
-          const Divider(color: Colors.white24, height: 40),
+          const SizedBox(height: 24),
+          _buildDarkInput('GUESTS', '2 Adults, 1 Child', Icons.people_outline),
+          const SizedBox(height: 24),
           SizedBox(
-            width: double.infinity,
-            height: 55,
+            width: double.infinity, height: 60,
             child: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: brandGold,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
               ),
-              child: Text('Book Now', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              child: Text('RESERVE NOW', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5)),
             ),
           ),
         ],
@@ -335,4 +334,25 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     );
   }
 
+  Widget _buildDarkInput(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.white10)),
+      child: Row(
+        children: [
+          Icon(icon, color: brandGold, size: 18),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              Text(value, style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+            ],
+          ),
+          const Spacer(),
+          const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 18),
+        ],
+      ),
+    );
+  }
 }
