@@ -653,7 +653,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
                     Navigator.pop(context);
                   },
                 );
-              }).toList(),
+              }),
             ],
           ),
         );

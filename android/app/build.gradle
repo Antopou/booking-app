@@ -39,6 +39,8 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    ndkVersion "25.1.8937393"
+
     defaultConfig {
         applicationId "com.example.booking_app"
         minSdkVersion flutter.minSdkVersion

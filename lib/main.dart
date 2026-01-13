@@ -3,9 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 // Import your screens
 import 'package:booking_app/screens/home_screen.dart';
-import 'package:booking_app/screens/room_listing_screen.dart';
-import 'package:booking_app/screens/bookings_screen.dart';
-import 'package:booking_app/screens/profile_screen.dart';
 
 void main() {
   runApp(const LuxeStayApp());
