@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:booking_app/services/booking_service.dart';
+import 'package:booking_app/services/auth_service.dart';
+import 'package:booking_app/models/booking_models.dart';
+import 'login_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -14,7 +18,77 @@ class _BookingsScreenState extends State<BookingsScreen> {
   
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
-  static const Color lightBackground = Color(0xFFF5F5F5); // Clean track color
+  static const Color lightBackground = Color(0xFFF5F5F5);
+
+  final BookingService _bookingService = BookingService();
+  final AuthService _authService = AuthService();
+  late Future<BookingListResponse> _bookingsFuture;
+  List<BookingListItem> _allBookings = [];
+  bool _isLoading = true;
+  bool? _isAuthenticated;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthAndFetchBookings();
+  }
+
+  Future<void> _checkAuthAndFetchBookings() async {
+    final token = await _authService.getToken();
+    if (token == null || token.isEmpty) {
+      setState(() {
+        _isAuthenticated = false;
+        _isLoading = false;
+      });
+      return;
+    }
+    
+    setState(() {
+      _isAuthenticated = true;
+    });
+    _bookingsFuture = _fetchBookings();
+  }
+
+  Future<BookingListResponse> _fetchBookings() async {
+    try {
+      final response = await _bookingService.fetchBookings();
+      setState(() {
+        _allBookings = response.data;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+      return response;
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+      throw e;
+    }
+  }
+
+  List<BookingListItem> get _upcomingBookings {
+    return _allBookings.where((b) {
+      return !b.isCancelled && 
+             b.status == 'confirmed' &&
+             b.checkInDate.isAfter(DateTime.now());
+    }).toList();
+  }
+
+  List<BookingListItem> get _pastBookings {
+    return _allBookings.where((b) {
+      return !b.isCancelled && b.status == 'completed';
+    }).toList();
+  }
+
+  List<BookingListItem> get _cancelledBookings {
+    return _allBookings.where((b) => b.isCancelled).toList();
+  }
+
+  double get _totalSpent {
+    return _allBookings.fold(0, (sum, booking) => sum + booking.totalPrice);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,25 +109,115 @@ class _BookingsScreenState extends State<BookingsScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      body: _isAuthenticated == null
+          ? _buildLoadingSpinner()
+          : (_isAuthenticated! ? _buildAuthenticatedContent() : _buildLoginPrompt()),
+    );
+  }
+
+  Widget _buildLoadingSpinner() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(brandGold),
+            strokeWidth: 3,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Loading your bookings...',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginPrompt() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // --- HEADER SECTION ---
-            const SizedBox(height: 15),
+            Icon(Icons.lock_outlined, size: 80, color: brandGold),
+            const SizedBox(height: 24),
             Text(
-              'My Stays',
+              'Sign In to View Bookings',
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: darkGrey,
-                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
             Text(
+              'Access your reservations and manage your stays',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: brandGold,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  'SIGN IN',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAuthenticatedContent() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // --- HEADER SECTION ---
+          const SizedBox(height: 15),
+          Text(
+            'My Stays',
+            style: GoogleFonts.poppins(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: darkGrey,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
               'Upcoming and past luxury experiences',
               style: GoogleFonts.poppins(
                 color: Colors.grey.shade500,
@@ -69,11 +233,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
               physics: const BouncingScrollPhysics(),
               child: Row(
                 children: [
-                  _buildMiniStat('TOTAL STAYS', '02', darkGrey),
+                  _buildMiniStat('TOTAL STAYS', '${_allBookings.length.toString().padLeft(2, '0')}', darkGrey),
                   const SizedBox(width: 12),
-                  _buildMiniStat('UPCOMING', '01', brandGold),
+                  _buildMiniStat('UPCOMING', '${_upcomingBookings.length.toString().padLeft(2, '0')}', brandGold),
                   const SizedBox(width: 12),
-                  _buildMiniStat('REWARDS', '1.2k', Colors.blueGrey),
+                  _buildMiniStat('TOTAL SPENT', '\$${_totalSpent.toStringAsFixed(0)}', Colors.blueGrey),
                 ],
               ),
             ),
@@ -98,16 +262,52 @@ class _BookingsScreenState extends State<BookingsScreen> {
             const SizedBox(height: 30),
 
             // --- BOOKING CONTENT ---
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _selectedTab == 0 ? _buildBookingCard() : _buildEmptyState(),
-            ),
+            _isLoading
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 60),
+                      child: CircularProgressIndicator(color: brandGold),
+                    ),
+                  )
+                : _errorMessage != null
+                    ? _buildErrorState()
+                    : AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _selectedTab == 0
+                            ? (_upcomingBookings.isEmpty
+                                ? _buildEmptyState()
+                                : ListView.separated(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: _upcomingBookings.length,
+                                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                                    itemBuilder: (_, index) => _buildBookingCard(_upcomingBookings[index]),
+                                  ))
+                            : _selectedTab == 1
+                                ? (_pastBookings.isEmpty
+                                    ? _buildEmptyState()
+                                    : ListView.separated(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemCount: _pastBookings.length,
+                                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                                        itemBuilder: (_, index) => _buildBookingCard(_pastBookings[index]),
+                                      ))
+                                : (_cancelledBookings.isEmpty
+                                    ? _buildEmptyState()
+                                    : ListView.separated(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemCount: _cancelledBookings.length,
+                                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                                        itemBuilder: (_, index) => _buildBookingCard(_cancelledBookings[index]),
+                                      )),
+                      ),
 
             const SizedBox(height: 120),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildMiniStat(String title, String value, Color accentColor) {
@@ -198,7 +398,15 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  Widget _buildBookingCard() {
+  Widget _buildBookingCard(BookingListItem booking) {
+    final statusColor = booking.isCancelled 
+        ? Colors.red.shade600 
+        : booking.status == 'confirmed' 
+            ? Colors.green.shade600 
+            : Colors.blue.shade600;
+    
+    final statusText = booking.isCancelled ? 'Cancelled' : (booking.status[0].toUpperCase() + booking.status.substring(1));
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -218,15 +426,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
             child: Stack(
               children: [
                 Image.network(
-                  'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
+                  booking.roomImage,
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 180,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  ),
                 ),
                 Positioned(
                   top: 16,
                   right: 16,
-                  child: _statusBadge('Confirmed', Colors.green.shade600),
+                  child: _statusBadge(statusText, statusColor),
                 ),
               ],
             ),
@@ -236,9 +449,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Deluxe Ocean View',
-                  style: TextStyle(
+                Text(
+                  booking.roomName,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: darkGrey,
@@ -248,9 +461,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _dateInfo('CHECK-IN', '28 Dec 2025'),
+                    _dateInfo('CHECK-IN', _formatDate(booking.checkInDate)),
                     Container(height: 30, width: 1, color: Colors.grey.shade100),
-                    _dateInfo('CHECK-OUT', '29 Dec 2025'),
+                    _dateInfo('CHECK-OUT', _formatDate(booking.checkOutDate)),
                   ],
                 ),
                 const Divider(height: 48, thickness: 0.8),
@@ -265,7 +478,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                                 color: Colors.grey,
                                 fontSize: 10,
                                 letterSpacing: 1.0)),
-                        Text('\$250.00',
+                        Text('\$${booking.totalPrice.toStringAsFixed(2)}',
                             style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
@@ -273,7 +486,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                       ],
                     ),
                     ElevatedButton(
-                      onPressed: () => _showManageBookingSheet(context),
+                      onPressed: () => _showManageBookingSheet(context, booking),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: darkGrey,
                         foregroundColor: Colors.white,
@@ -295,6 +508,67 @@ class _BookingsScreenState extends State<BookingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading bookings',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage ?? 'Unknown error occurred',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _errorMessage = null;
+                  _bookingsFuture = _fetchBookings();
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brandGold,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'RETRY',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -358,16 +632,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  void _showManageBookingSheet(BuildContext context) {
+  void _showManageBookingSheet(BuildContext context, BookingListItem booking) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _buildManageBookingSheet(),
+      builder: (context) => _buildManageBookingSheet(booking),
     );
   }
 
-  Widget _buildManageBookingSheet() {
+  Widget _buildManageBookingSheet(BookingListItem booking) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
@@ -416,7 +690,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Booking Info Card
-                  _buildInfoCard(),
+                  _buildInfoCard(booking),
                   const SizedBox(height: 24),
 
                   // Quick Actions
@@ -495,7 +769,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(BookingListItem booking) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -515,7 +789,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               Icon(Icons.hotel_outlined, color: brandGold, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Deluxe Ocean View',
+                booking.roomName,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -542,7 +816,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '28 Dec 2025',
+                      _formatDate(booking.checkInDate),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -567,7 +841,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '29 Dec 2025',
+                      _formatDate(booking.checkOutDate),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -585,7 +859,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               Icon(Icons.people_outline, size: 16, color: Colors.grey.shade600),
               const SizedBox(width: 8),
               Text(
-                '2 Adults, 1 Child',
+                '${booking.checkOutDate.difference(booking.checkInDate).inDays} night(s)',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   color: Colors.grey.shade700,

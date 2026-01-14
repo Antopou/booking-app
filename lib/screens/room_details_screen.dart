@@ -27,10 +27,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   int _selectedImageIndex = 0;
   int _adults = 2;
   int _children = 1;
+  late DateTime _checkInDate;
+  late DateTime _checkOutDate;
   
   @override
   void initState() {
     super.initState();
+    _checkInDate = DateTime.now().add(const Duration(days: 1));
+    _checkOutDate = DateTime.now().add(const Duration(days: 4));
     _loadRoomDetails();
   }
   
@@ -438,10 +442,13 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   MaterialPageRoute(
                     builder: (context) => CheckoutScreen(
                       roomName: _room?.title ?? 'Room',
+                      roomCode: _room?.roomCode ?? 'ROOM-00001',
                       pricePerNight: (_room?.pricePerNight ?? 0).toDouble(),
                       adults: _adults,
                       children: _children,
-                      nights: 3,
+                      checkInDate: _checkInDate,
+                      checkOutDate: _checkOutDate,
+                      nights: _checkOutDate.difference(_checkInDate).inDays,
                     ),
                   ),
                 );

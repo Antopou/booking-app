@@ -8,10 +8,16 @@ class ApiConfig {
   // API Endpoints
   static const String roomsEndpoint = '/rooms/list';
   static const String bookingsEndpoint = '/bookings';
+  static const String loginEndpoint = '/auth/login';
+  static const String registerEndpoint = '/auth/register';
+   static const String checkTokenEndpoint = '/auth/check-token';
   
   // Full URLs
   static String get roomsUrl => '$baseUrl$roomsEndpoint';
   static String get bookingsUrl => '$baseUrl$bookingsEndpoint';
+  static String get loginUrl => '$baseUrl$loginEndpoint';
+  static String get registerUrl => '$baseUrl$registerEndpoint';
+   static String get checkTokenUrl => '$baseUrl$checkTokenEndpoint';
   
   // Timeout durations
   static const Duration connectionTimeout = Duration(seconds: 30);

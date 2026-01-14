@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Import your screens
-import 'package:booking_app/screens/home_screen.dart';
+import 'package:booking_app/screens/splash_screen.dart';
 
 void main() {
   runApp(const LuxeStayApp());
@@ -43,8 +43,7 @@ class LuxeStayApp extends StatelessWidget {
           elevation: 10,
         ),
       ),
-      // Set the initial route to our animated home screen
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

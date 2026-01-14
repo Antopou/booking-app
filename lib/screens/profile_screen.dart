@@ -1,14 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:booking_app/screens/room_listing_screen.dart';
-// import 'package:booking_app/screens/bookings_screen.dart';
-// import 'package:booking_app/utils/route_transitions.dart';
+import 'package:booking_app/screens/login_screen.dart';
+import 'package:booking_app/screens/personal_information_screen.dart';
+import 'package:booking_app/screens/payment_methods_screen.dart';
+import 'package:booking_app/screens/rewards_points_screen.dart';
+import 'package:booking_app/screens/saved_destinations_screen.dart';
+import 'package:booking_app/screens/notifications_screen.dart';
+import 'package:booking_app/screens/language_currency_screen.dart';
+import 'package:booking_app/services/auth_service.dart';
+import 'package:booking_app/services/user_service.dart';
+import 'package:booking_app/models/user_profile_models.dart';
+import 'package:booking_app/utils/route_transitions.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
+
+  final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
+  bool? _isAuthenticated;
+  UserProfile? _userProfile;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthenticationAndFetchProfile();
+  }
+
+  Future<void> _checkAuthenticationAndFetchProfile() async {
+    final token = await _authService.getToken();
+    
+    if (token == null || token.isEmpty) {
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        _isAuthenticated = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isAuthenticated = true;
+    });
+
+    try {
+      final response = await _userService.getProfile();
+      await Future.delayed(const Duration(milliseconds: 500));
+      setState(() {
+        _userProfile = response.data;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  Future<void> _handleSignOut(BuildContext context) async {
+    await _authService.logout();
+    
+    if (!context.mounted) return;
+    
+    Navigator.of(context).pushAndRemoveUntil(
+      RouteTransitions.fadeIn(const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  void _handleLogin(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,23 +107,109 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+      body: _isAuthenticated == null
+          ? _buildLoadingSpinner()
+          : (_isAuthenticated! ? _buildAuthenticatedProfile() : _buildLoginPrompt()),
+    );
+  }
+
+  Widget _buildLoginPrompt() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 10),
-            _buildProfileHeader(),
-            const SizedBox(height: 30),
-            _buildActionSection(context),
+            Icon(Icons.person_outline, size: 80, color: brandGold),
+            const SizedBox(height: 24),
+            Text(
+              'Welcome to LuxeStay',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: darkGrey,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Sign in to access your account and manage your profile',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () => _handleLogin(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: brandGold,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  'SIGN IN',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // --- UI HELPER METHODS ---
+  Widget _buildLoadingSpinner() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(brandGold),
+            strokeWidth: 3,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Loading profile...',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAuthenticatedProfile() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          _buildProfileHeader(),
+          const SizedBox(height: 32),
+          _buildActionSection(context),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
 
   Widget _buildProfileHeader() {
+    final displayName = _userProfile?.displayName ?? 'Loading...';
+    final membershipLevel = _userProfile?.membershipLevel ?? 'Standard';
+    final profileImage = _userProfile?.profileImage;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -66,10 +223,12 @@ class ProfileScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: brandGold, width: 2),
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(
-                      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070'),
+                  backgroundImage: profileImage != null
+                      ? NetworkImage(profileImage)
+                      : const NetworkImage(
+                          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070'),
                 ),
               ),
               Container(
@@ -84,7 +243,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Johnathan Doe',
+            displayName,
             style: GoogleFonts.playfairDisplay(
               fontSize: 26,
               fontWeight: FontWeight.bold,
@@ -92,7 +251,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           Text(
-            'Gold Elite Member',
+            '$membershipLevel Member',
             style: GoogleFonts.poppins(
               color: brandGold,
               fontWeight: FontWeight.w500,
@@ -130,7 +289,7 @@ class ProfileScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: TextButton(
-              onPressed: () {},
+              onPressed: () => _handleSignOut(context),
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
@@ -181,7 +340,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -204,7 +363,55 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-      onTap: () {},
+      onTap: () {
+        _handleMenuTap(context, title);
+      },
     );
+  }
+
+  void _handleMenuTap(BuildContext context, String menuTitle) {
+    switch (menuTitle) {
+      case "Personal Information":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PersonalInformationScreen(
+              userProfile: _userProfile,
+              onProfileUpdated: () => _checkAuthenticationAndFetchProfile(),
+            ),
+          ),
+        );
+        break;
+      case "Payment Methods":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PaymentMethodsScreen()),
+        );
+        break;
+      case "Rewards & Points":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RewardsPointsScreen()),
+        );
+        break;
+      case "Saved Destinations":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SavedDestinationsScreen()),
+        );
+        break;
+      case "Notifications":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+        );
+        break;
+      case "Language & Currency":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LanguageCurrencyScreen()),
+        );
+        break;
+    }
   }
 }

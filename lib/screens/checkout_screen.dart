@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'home_screen.dart';
+import 'package:booking_app/services/booking_service.dart';
+import 'package:booking_app/models/booking_models.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final String roomName;
+  final String roomCode;
   final double pricePerNight;
   final int adults;
   final int children;
   final int nights;
+  final DateTime checkInDate;
+  final DateTime checkOutDate;
 
   const CheckoutScreen({
     super.key,
     required this.roomName,
+    required this.roomCode,
     required this.pricePerNight,
     required this.adults,
     required this.children,
+    required this.checkInDate,
+    required this.checkOutDate,
     this.nights = 3,
   });
 
@@ -31,12 +39,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _bankTransferExpanded = false;
   bool _qrPaymentExpanded = false;
   bool _digitalWalletsExpanded = false;
+  bool _isLoading = false;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _cardNumberController = TextEditingController();
   final TextEditingController _expiryController = TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
+  final BookingService _bookingService = BookingService();
 
   @override
   void dispose() {
@@ -711,29 +721,108 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       width: double.infinity,
       height: 60,
       child: ElevatedButton(
-        onPressed: _confirmBooking,
+        onPressed: _isLoading ? null : _confirmBooking,
         style: ElevatedButton.styleFrom(
           backgroundColor: brandGold,
+          disabledBackgroundColor: Colors.grey[400],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 0,
         ),
-        child: Text(
-          'CONFIRM BOOKING',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 1.5,
-          ),
-        ),
+        child: _isLoading
+          ? SizedBox(
+              height: 24,
+              width: 24,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 2,
+              ),
+            )
+          : Text(
+              'CONFIRM BOOKING',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.5,
+              ),
+            ),
       ),
     );
   }
 
-  void _confirmBooking() {
-    // Show success dialog
+  void _confirmBooking() async {
+    // Validate required fields
+    if (_nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your full name')),
+      );
+      return;
+    }
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your email')),
+      );
+      return;
+    }
+    if (_phoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your phone number')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Prepare booking request
+      final bookingRequest = BookingRequest(
+        roomCode: widget.roomCode,
+        guest: GuestInfo(
+          guestCode: null,
+          name: _nameController.text,
+          email: _emailController.text,
+          phoneNumber: _phoneController.text,
+        ),
+        checkInDate: widget.checkInDate,
+        checkOutDate: widget.checkOutDate,
+        paymentMethod: _mapPaymentMethod(_selectedPaymentMethod),
+        numberOfGuests: widget.adults + widget.children,
+        totalPayment: _grandTotal,
+      );
+
+      // Create booking
+      final bookingResponse = await _bookingService.createBooking(bookingRequest);
+
+      if (!mounted) return;
+
+      // Show success dialog
+      _showSuccessDialog(bookingResponse);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Booking failed: ${e.toString()}')),
+      );
+    }
+  }
+
+  String _mapPaymentMethod(String selected) {
+    final Map<String, String> paymentMap = {
+      'credit_card': 'Credit Card',
+      'aba': 'ABA Bank',
+      'aceleda': 'ACELEDA Bank',
+      'wing': 'Wing Bank',
+      'khqr': 'KHQR',
+      'apple_pay': 'Apple Pay',
+      'google_pay': 'Google Pay',
+    };
+    return paymentMap[selected] ?? 'Credit Card';
+  }
+
+  void _showSuccessDialog(BookingResponse bookingResponse) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -765,7 +854,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Your reservation has been confirmed. A confirmation email has been sent to your email address.',
+              'Confirmation #: ${bookingResponse.data.checkinCode}',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[500],
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Your reservation has been confirmed. A confirmation email has been sent to ${bookingResponse.data.guestEmail}.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
