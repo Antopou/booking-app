@@ -173,6 +173,8 @@ class BookingListItem {
   final String status;
   final bool isCheckout;
   final bool isCancelled;
+  final int? adults;
+  final int? children;
 
   BookingListItem({
     required this.checkinCode,
@@ -185,6 +187,8 @@ class BookingListItem {
     required this.status,
     required this.isCheckout,
     required this.isCancelled,
+    this.adults,
+    this.children,
   });
 
   factory BookingListItem.fromJson(Map<String, dynamic> json) => BookingListItem(
@@ -202,6 +206,8 @@ class BookingListItem {
     status: json['status'] ?? '',
     isCheckout: json['isCheckout'] ?? false,
     isCancelled: json['isCancelled'] ?? false,
+    adults: json['adult'],
+    children: json['child'],
   );
 }
 
@@ -222,5 +228,87 @@ class BookingListResponse {
         ?.map((item) => BookingListItem.fromJson(item as Map<String, dynamic>))
         .toList() ?? [],
     footer: ResponseFooter.fromJson(json['footer'] ?? {}),
+  );
+}
+
+class BookingDetail {
+  final int id;
+  final String checkinCode;
+  final String? reservationRef;
+  final String guestCode;
+  final String roomCode;
+  final DateTime checkinDate;
+  final DateTime checkoutDate;
+  final DateTime? cancelledDate;
+  final String paymentMethod;
+  final int numberOfGuests;
+  final int adult;
+  final int child;
+  final double rate;
+  final double totalPayment;
+  final bool isCheckout;
+  final String? note;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final int createdBy;
+  final int? modifiedBy;
+  final bool isActive;
+
+  BookingDetail({
+    required this.id,
+    required this.checkinCode,
+    this.reservationRef,
+    required this.guestCode,
+    required this.roomCode,
+    required this.checkinDate,
+    required this.checkoutDate,
+    this.cancelledDate,
+    required this.paymentMethod,
+    required this.numberOfGuests,
+    required this.adult,
+    required this.child,
+    required this.rate,
+    required this.totalPayment,
+    required this.isCheckout,
+    this.note,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.createdBy,
+    this.modifiedBy,
+    required this.isActive,
+  });
+
+  factory BookingDetail.fromJson(Map<String, dynamic> json) => BookingDetail(
+    id: json['id'] ?? 0,
+    checkinCode: json['checkinCode'] ?? '',
+    reservationRef: json['reservationRef'],
+    guestCode: json['guestCode'] ?? '',
+    roomCode: json['roomCode'] ?? '',
+    checkinDate: json['checkinDate'] != null
+        ? DateTime.parse(json['checkinDate'].toString())
+        : DateTime.now(),
+    checkoutDate: json['checkoutDate'] != null
+        ? DateTime.parse(json['checkoutDate'].toString())
+        : DateTime.now(),
+    cancelledDate: json['cancelledDate'] != null
+        ? DateTime.parse(json['cancelledDate'].toString())
+        : null,
+    paymentMethod: json['paymentMethod'] ?? '',
+    numberOfGuests: json['numberOfGuest'] ?? 0,
+    adult: json['adult'] ?? 0,
+    child: json['child'] ?? 0,
+    rate: (json['rate'] ?? 0).toDouble(),
+    totalPayment: (json['totalPayment'] ?? 0).toDouble(),
+    isCheckout: json['isCheckout'] ?? false,
+    note: json['note'],
+    createdAt: json['createdAt'] != null
+        ? DateTime.parse(json['createdAt'].toString())
+        : DateTime.now(),
+    updatedAt: json['updatedAt'] != null
+        ? DateTime.parse(json['updatedAt'].toString())
+        : DateTime.now(),
+    createdBy: json['createdBy'] ?? 0,
+    modifiedBy: json['modifiedBy'],
+    isActive: json['isActive'] ?? true,
   );
 }

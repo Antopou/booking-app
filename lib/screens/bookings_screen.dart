@@ -486,7 +486,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
                       ],
                     ),
                     ElevatedButton(
-                      onPressed: () => _showManageBookingSheet(context, booking),
+                      onPressed: () {
+                        final index = _allBookings.indexWhere((b) => b.checkinCode == booking.checkinCode);
+                        if (index != -1) _showManageBookingSheet(context, index);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: darkGrey,
                         foregroundColor: Colors.white,
@@ -632,16 +635,23 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  void _showManageBookingSheet(BuildContext context, BookingListItem booking) {
+  void _showManageBookingSheet(BuildContext context, int bookingIndex) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _buildManageBookingSheet(booking),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => _buildManageBookingSheet(
+          bookingIndex,
+          setSheetState,
+          () => setState(() {}), // callback to refresh parent
+        ),
+      ),
     );
   }
 
-  Widget _buildManageBookingSheet(BookingListItem booking) {
+  Widget _buildManageBookingSheet(int bookingIndex, StateSetter setSheetState, VoidCallback refreshParent) {
+    final booking = _allBookings[bookingIndex];
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
@@ -709,7 +719,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     title: 'Modify Dates',
                     subtitle: 'Change check-in or check-out dates',
                     color: brandGold,
-                    onTap: () => _showModifyDatesDialog(context),
+                    onTap: () => _showModifyDatesDialog(context, bookingIndex, setSheetState, refreshParent),
                   ),
                   const SizedBox(height: 12),
                   
@@ -718,16 +728,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     title: 'Update Guests',
                     subtitle: 'Change number of guests',
                     color: Colors.blue,
-                    onTap: () => _showUpdateGuestsDialog(context),
+                    onTap: () => _showUpdateGuestsDialog(context, bookingIndex, setSheetState, refreshParent),
                   ),
                   const SizedBox(height: 12),
                   
                   _buildActionButton(
                     icon: Icons.receipt_long_outlined,
                     title: 'View Confirmation',
-                    subtitle: 'Booking ID: #BK-2025-0142',
+                    subtitle: 'Booking ID: ${booking.checkinCode.substring(0, 8).toUpperCase()}',
                     color: Colors.green,
-                    onTap: () => _showConfirmationDialog(context),
+                    onTap: () => _showConfirmationDialog(context, booking),
                   ),
                   const SizedBox(height: 12),
                   
@@ -736,7 +746,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     title: 'Contact Support',
                     subtitle: 'Get help with your booking',
                     color: Colors.purple,
-                    onTap: () => _showContactSupportDialog(context),
+                    onTap: () => _showContactSupportDialog(context, booking),
                   ),
                   const SizedBox(height: 24),
 
@@ -754,9 +764,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   _buildActionButton(
                     icon: Icons.cancel_outlined,
                     title: 'Cancel Booking',
-                    subtitle: 'Free cancellation until 26 Dec 2025',
+                    subtitle: 'Free cancellation until ${_formatDate(booking.checkInDate.subtract(const Duration(days: 2)))}',
                     color: Colors.red,
-                    onTap: () => _showCancelBookingDialog(context),
+                    onTap: () => _showCancelBookingDialog(context, booking.checkinCode),
                   ),
                   
                   const SizedBox(height: 40),
@@ -930,23 +940,24 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  void _showModifyDatesDialog(BuildContext context) {
-    DateTime checkInDate = DateTime(2025, 12, 28);
-    DateTime checkOutDate = DateTime(2025, 12, 29);
+  void _showModifyDatesDialog(BuildContext context, int bookingIndex, StateSetter setSheetState, VoidCallback refreshParent) {
+    final booking = _allBookings[bookingIndex];
+    DateTime checkInDate = booking.checkInDate;
+    DateTime checkOutDate = booking.checkOutDate;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Modify Dates', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          title: Text('Modify Dates - ${booking.roomName}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Select new check-in and check-out dates',
+                  'Update check-in and check-out dates',
                   style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 20),
@@ -1111,18 +1122,102 @@ class _BookingsScreenState extends State<BookingsScreen> {
               child: Text('CANCEL', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Dates updated successfully! New check-in: ${checkInDate.day} ${_getMonthName(checkInDate.month)}',
-                      style: GoogleFonts.poppins(),
+              onPressed: () async {
+                Navigator.pop(context); // Close Modify Dates dialog
+                
+                try {
+                  // Show loading indicator
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Updating dates...',
+                            style: GoogleFonts.poppins(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: brandGold,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      duration: const Duration(seconds: 5),
                     ),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                  );
+                  
+                  // Call API to update booking
+                  await _bookingService.updateBooking(
+                    checkinCode: booking.checkinCode,
+                    checkInDate: checkInDate,
+                    checkOutDate: checkOutDate,
+                    numberOfGuests: booking.checkinCode.length,
+                    adults: 0,
+                    children: 0,
+                  );
+                  
+                  // Refresh the specific booking data from API
+                  final updatedBookingDetail = await _bookingService.findBooking(booking.checkinCode);
+                  
+                  // Update the local list
+                  final index = _allBookings.indexWhere((b) => b.checkinCode == booking.checkinCode);
+                  if (index != -1 && mounted) {
+                    setSheetState(() {
+                      _allBookings[index] = BookingListItem(
+                        checkinCode: updatedBookingDetail.checkinCode,
+                        roomCode: updatedBookingDetail.roomCode,
+                        roomName: booking.roomName,
+                        roomImage: booking.roomImage,
+                        checkInDate: updatedBookingDetail.checkinDate,
+                        checkOutDate: updatedBookingDetail.checkoutDate,
+                        totalPrice: updatedBookingDetail.totalPayment,
+                        status: booking.status,
+                        isCheckout: updatedBookingDetail.isCheckout,
+                        isCancelled: updatedBookingDetail.cancelledDate != null,
+                      );
+                    });
+                    refreshParent();
+                    // Show success message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Dates updated successfully!',
+                              style: GoogleFonts.poppins(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Failed to update dates: ${e.toString()}',
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: brandGold,
@@ -1144,7 +1239,8 @@ class _BookingsScreenState extends State<BookingsScreen> {
     return months[month - 1];
   }
 
-  void _showUpdateGuestsDialog(BuildContext context) {
+  void _showUpdateGuestsDialog(BuildContext context, int bookingIndex, StateSetter setSheetState, VoidCallback refreshParent) {
+    final booking = _allBookings[bookingIndex];
     int adults = 2;
     int children = 1;
 
@@ -1153,7 +1249,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Update Guests', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          title: Text('Update Guests - ${booking.roomName}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1230,18 +1326,103 @@ class _BookingsScreenState extends State<BookingsScreen> {
               child: Text('CANCEL', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Guest count updated: $adults Adult${adults != 1 ? 's' : ''}, $children Child${children != 1 ? 'ren' : ''}',
-                      style: GoogleFonts.poppins(),
+              onPressed: () async {
+                Navigator.pop(context); // Close Update Guests dialog
+                
+                try {
+                  // Show loading indicator
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Updating guests...',
+                            style: GoogleFonts.poppins(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: brandGold,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      duration: const Duration(seconds: 5),
                     ),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                  );
+                  
+                  // Call API to update booking
+                  await _bookingService.updateBooking(
+                    checkinCode: booking.checkinCode,
+                    checkInDate: booking.checkInDate,
+                    checkOutDate: booking.checkOutDate,
+                    numberOfGuests: adults + children,
+                    adults: adults,
+                    children: children,
+                  );
+                  
+                  // Refresh the specific booking data from API
+                  final updatedBookingDetail = await _bookingService.findBooking(booking.checkinCode);
+                  
+                  // Update the local list and rebuild the sheet
+                  if (mounted) {
+                    setSheetState(() {
+                      _allBookings[bookingIndex] = BookingListItem(
+                        checkinCode: updatedBookingDetail.checkinCode,
+                        roomCode: updatedBookingDetail.roomCode,
+                        roomName: booking.roomName,
+                        roomImage: booking.roomImage,
+                        checkInDate: updatedBookingDetail.checkinDate,
+                        checkOutDate: updatedBookingDetail.checkoutDate,
+                        totalPrice: updatedBookingDetail.totalPayment,
+                        status: booking.status,
+                        isCheckout: updatedBookingDetail.isCheckout,
+                        isCancelled: updatedBookingDetail.cancelledDate != null,
+                      );
+                    });
+                    refreshParent();
+                    // Show success message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Guest count updated: $adults Adult${adults != 1 ? 's' : ''}, $children Child${children != 1 ? 'ren' : ''}',
+                                style: GoogleFonts.poppins(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Failed to update guests: ${e.toString()}',
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: brandGold,
@@ -1328,7 +1509,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  void _showConfirmationDialog(BuildContext context) {
+  void _showConfirmationDialog(BuildContext context, BookingListItem booking) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1337,20 +1518,28 @@ class _BookingsScreenState extends State<BookingsScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             const SizedBox(width: 12),
-            Text('Booking Confirmed', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+            Expanded(
+              child: Text(
+                'Booking Confirmed',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildConfirmationRow('Booking ID', '#BK-2025-0142'),
-            _buildConfirmationRow('Room', 'Deluxe Ocean View'),
-            _buildConfirmationRow('Check-in', '28 Dec 2025, 3:00 PM'),
-            _buildConfirmationRow('Check-out', '29 Dec 2025, 11:00 AM'),
-            _buildConfirmationRow('Guests', '2 Adults, 1 Child'),
-            _buildConfirmationRow('Total', '\$250.00'),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildConfirmationRow('Booking ID', booking.checkinCode),
+              _buildConfirmationRow('Room', booking.roomName),
+              _buildConfirmationRow('Check-in', _formatDate(booking.checkInDate)),
+              _buildConfirmationRow('Check-out', _formatDate(booking.checkOutDate)),
+              _buildConfirmationRow('Duration', '${booking.checkOutDate.difference(booking.checkInDate).inDays} night(s)'),
+              _buildConfirmationRow('Total', '\$${booking.totalPrice.toStringAsFixed(2)}'),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -1364,18 +1553,32 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
   Widget _buildConfirmationRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.poppins(color: Colors.grey.shade600, fontSize: 13)),
-          Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(color: Colors.grey.shade600, fontSize: 13),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  void _showContactSupportDialog(BuildContext context) {
+  void _showContactSupportDialog(BuildContext context, BookingListItem booking) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1414,7 +1617,62 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  void _showCancelBookingDialog(BuildContext context) {
+  Future<void> _refreshBookingData(String checkinCode) async {
+    try {
+      final updatedBooking = await _bookingService.findBooking(checkinCode);
+      
+      // Update the local booking in the list
+      final index = _allBookings.indexWhere((b) => b.checkinCode == checkinCode);
+      if (index != -1) {
+        setState(() {
+          _allBookings[index] = BookingListItem(
+            checkinCode: updatedBooking.checkinCode,
+            roomCode: updatedBooking.roomCode,
+            roomName: _allBookings[index].roomName,
+            roomImage: _allBookings[index].roomImage,
+            checkInDate: updatedBooking.checkinDate,
+            checkOutDate: updatedBooking.checkoutDate,
+            totalPrice: updatedBooking.totalPayment,
+            status: _allBookings[index].status,
+            isCheckout: updatedBooking.isCheckout,
+            isCancelled: updatedBooking.cancelledDate != null,
+          );
+        });
+      }
+    } catch (e) {
+      print('Error refreshing booking: $e');
+    }
+  }
+
+  Future<void> _cancelBooking(String checkinCode) async {
+    try {
+      await _bookingService.cancelBooking(checkinCode);
+      
+      // Refresh the bookings list
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+      await _fetchBookings();
+      
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to cancel booking: ${e.toString()}',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showCancelBookingDialog(BuildContext context, String checkinCode) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1457,16 +1715,60 @@ class _BookingsScreenState extends State<BookingsScreen> {
             child: Text('KEEP BOOKING', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Close bottom sheet
+              
+              // Show loading indicator
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Booking cancelled successfully', style: GoogleFonts.poppins()),
-                  backgroundColor: Colors.green,
+                  content: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Cancelling booking...',
+                        style: GoogleFonts.poppins(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: brandGold,
                   behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  duration: const Duration(seconds: 2),
                 ),
               );
+              
+              // Cancel the booking
+              await _cancelBooking(checkinCode);
+              
+              // Show success message
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Booking cancelled successfully',
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                );
+              }
             },
             child: Text('CANCEL BOOKING', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
           ),
