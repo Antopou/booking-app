@@ -1,332 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:booking_app/utils/app_constants.dart';
 
-class RewardsPointsScreen extends StatefulWidget {
+class RewardsPointsScreen extends StatelessWidget {
   const RewardsPointsScreen({super.key});
-
-  @override
-  State<RewardsPointsScreen> createState() => _RewardsPointsScreenState();
-}
-
-class _RewardsPointsScreenState extends State<RewardsPointsScreen> {
-  static const Color brandGold = Color(0xFFC5A368);
-  static const Color darkGrey = Color(0xFF1A1A1A);
-
-  int totalPoints = 4850;
-  int pointsToNextTier = 1150;
-
-  List<Map<String, dynamic>> recentTransactions = [
-    {
-      'title': 'Booking at Ocean View Resort',
-      'points': '+250',
-      'date': '12 Jan 2025',
-      'type': 'earned',
-    },
-    {
-      'title': 'Redeemed for discount',
-      'points': '-500',
-      'date': '08 Jan 2025',
-      'type': 'redeemed',
-    },
-    {
-      'title': 'Booking at Mountain Retreat',
-      'points': '+180',
-      'date': '05 Jan 2025',
-      'type': 'earned',
-    },
-    {
-      'title': 'Referral bonus',
-      'points': '+100',
-      'date': '01 Jan 2025',
-      'type': 'earned',
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
+        title: Text("Rewards & Points", style: AppTextStyles.subHeading),
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: darkGrey),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Rewards & Points',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: darkGrey,
-          ),
-        ),
-        centerTitle: true,
+        iconTheme: const IconThemeData(color: AppColors.darkGrey),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Points Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [brandGold, brandGold.withOpacity(0.8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: brandGold.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Current Points',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.9),
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '$totalPoints',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tier Status',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              color: Colors.white.withOpacity(0.8),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Gold Elite',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Next Tier',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              color: Colors.white.withOpacity(0.8),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$pointsToNextTier points',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Progress to Next Tier
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Progress to Platinum',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: darkGrey,
-                        ),
-                      ),
-                      Text(
-                        '${((totalPoints / (totalPoints + pointsToNextTier)) * 100).toStringAsFixed(0)}%',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: brandGold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value:
-                          totalPoints / (totalPoints + pointsToNextTier),
-                      minHeight: 8,
-                      backgroundColor: Colors.grey.shade300,
-                      valueColor: AlwaysStoppedAnimation<Color>(brandGold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Recent Activity
-            Text(
-              'Recent Activity',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: darkGrey,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(
-              recentTransactions.length,
-              (index) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildTransactionItem(recentTransactions[index]),
-              ),
-            ),
-
+            _buildPointsHeader(),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Redeem rewards',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      backgroundColor: brandGold,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: brandGold,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  'REDEEM REWARDS',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
+            Align(alignment: Alignment.centerLeft, child: Text("Recent History", style: AppTextStyles.subHeading)),
+            const SizedBox(height: 16),
+            _buildHistoryItem("Booking at Ocean View", "+250 pts", "Jan 12, 2025", true),
+            _buildHistoryItem("Reward Redemption", "-500 pts", "Jan 08, 2025", false),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTransactionItem(Map<String, dynamic> transaction) {
-    final isEarned = transaction['type'] == 'earned';
-    final pointColor = isEarned ? Colors.green : Colors.red;
-
+  Widget _buildPointsHeader() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        gradient: const LinearGradient(colors: [AppColors.brandGold, Color(0xFFE5C185)]),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: pointColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              isEarned ? Icons.add_circle_outline : Icons.remove_circle_outline,
-              color: pointColor,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction['title'] as String,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: darkGrey,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  transaction['date'] as String,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            transaction['points'] as String,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: pointColor,
-            ),
-          ),
+          Text("Current Balance", style: AppTextStyles.body.copyWith(color: Colors.white70)),
+          const SizedBox(height: 8),
+          Text("4,850", style: AppTextStyles.heading.copyWith(fontSize: 40, color: Colors.white)),
+          const SizedBox(height: 16),
+          const Divider(color: Colors.white24),
+          const SizedBox(height: 8),
+          Text("Gold Tier Member", style: AppTextStyles.body.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryItem(String title, String points, String date, bool isEarned) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+            Text(date, style: AppTextStyles.caption),
+          ]),
+          Text(points, style: TextStyle(color: isEarned ? Colors.green : Colors.red, fontWeight: FontWeight.bold)),
         ],
       ),
     );
