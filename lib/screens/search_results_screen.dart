@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:booking_app/screens/room_details_screen.dart';
+import 'package:booking_app/config/api_config.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SearchResultsScreen extends StatefulWidget {
   final DateTimeRange dateRange;
@@ -15,10 +18,13 @@ class SearchResultsScreen extends StatefulWidget {
   });
 
   @override
-  State<SearchResultsScreen> createState() => _SearchResultsScreenState();
+  State<SearchResultsScreen> createState() => SearchResultsScreenState();
 }
 
-class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTickerProviderStateMixin {
+class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTickerProviderStateMixin {
+  // Store the last filter payload for later use (e.g., for booking)
+  static Map<String, dynamic>? _lastFilterPayload;
+  static Map<String, dynamic>? get lastFilterPayload => _lastFilterPayload;
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
 
@@ -29,81 +35,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
   String _sortBy = 'Recommended';
   final List<String> _sortOptions = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Rating'];
 
-  // Available rooms data
-  final List<Map<String, dynamic>> _availableRooms = [
-    {
-      'id': 1,
-      'name': 'Deluxe Ocean View',
-      'category': 'Ocean View',
-      'price': 250,
-      'rating': 4.9,
-      'reviews': 127,
-      'description': 'Spacious deluxe room with breathtaking ocean views and premium amenities.',
-      'image': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
-      'amenities': ['Ocean View', 'King Bed', 'Free WiFi', 'Breakfast'],
-      'size': '45 m²',
-    },
-    {
-      'id': 2,
-      'name': 'Luxury Penthouse Suite',
-      'category': 'Penthouse',
-      'price': 580,
-      'rating': 5.0,
-      'reviews': 89,
-      'description': 'Top-floor penthouse with panoramic city views and exclusive services.',
-      'image': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070',
-      'amenities': ['City View', 'Private Terrace', 'Butler Service', 'Jacuzzi'],
-      'size': '120 m²',
-    },
-    {
-      'id': 3,
-      'name': 'Executive Suite',
-      'category': 'Suites',
-      'price': 380,
-      'rating': 4.8,
-      'reviews': 156,
-      'description': 'Elegant suite with separate living area and modern workspace.',
-      'image': 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974',
-      'amenities': ['Living Room', '2 Bathrooms', 'Work Desk', 'Mini Bar'],
-      'size': '75 m²',
-    },
-    {
-      'id': 4,
-      'name': 'Coastal Ocean View',
-      'category': 'Ocean View',
-      'price': 220,
-      'rating': 4.7,
-      'reviews': 94,
-      'description': 'Comfortable room with stunning ocean views and private balcony.',
-      'image': 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070',
-      'amenities': ['Balcony', 'Queen Bed', 'Sea View', 'Coffee Maker'],
-      'size': '35 m²',
-    },
-    {
-      'id': 5,
-      'name': 'Modern Studio',
-      'category': 'Studio',
-      'price': 150,
-      'rating': 4.6,
-      'reviews': 203,
-      'description': 'Compact studio with contemporary design and all essential amenities.',
-      'image': 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=2070',
-      'amenities': ['Kitchenette', 'Smart TV', 'Free WiFi', 'Air Conditioning'],
-      'size': '28 m²',
-    },
-    {
-      'id': 6,
-      'name': 'Presidential Penthouse',
-      'category': 'Penthouse',
-      'price': 890,
-      'rating': 5.0,
-      'reviews': 42,
-      'description': 'Ultimate luxury penthouse with private terrace and butler service.',
-      'image': 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=2070',
-      'amenities': ['Private Pool', 'Helipad Access', 'Cinema Room', 'Chef Service'],
-      'size': '250 m²',
-    },
-  ];
+  List<Map<String, dynamic>> _availableRooms = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -122,7 +56,72 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
+    _fetchAvailableRooms();
     _controller.forward();
+  }
+
+  Future<void> _fetchAvailableRooms() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final checkIn = widget.dateRange.start.toIso8601String().split('T').first;
+      final checkOut = widget.dateRange.end.toIso8601String().split('T').first;
+      // Save the filter payload for later use
+      _lastFilterPayload = {
+        'checkIn': checkIn,
+        'checkOut': checkOut,
+        'adults': widget.adults,
+        'children': widget.children,
+      };
+      final url = Uri.parse('${ApiConfig.baseUrl}/rooms/availability?checkIn=$checkIn&checkOut=$checkOut&adults=${widget.adults}&children=${widget.children}');
+      final response = await http.get(url, headers: ApiConfig.defaultHeaders);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final List rooms = json['data'] ?? [];
+        setState(() {
+          _availableRooms = rooms.map<Map<String, dynamic>>((e) => _mapApiRoomToUi(e)).toList();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load rooms. (${response.statusCode})';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load rooms.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Map<String, dynamic> _mapApiRoomToUi(Map<String, dynamic> apiRoom) {
+    // Map API fields to UI fields
+    return {
+      'id': apiRoom['id'],
+      'name': apiRoom['name'] ?? '',
+      'category': apiRoom['roomTypeName'] ?? '',
+      'price': apiRoom['pricePerNight'] ?? 0,
+      'rating': (apiRoom['rating'] ?? 0).toDouble(),
+      'reviews': apiRoom['totalReviews'] ?? 0,
+      'description': apiRoom['description'] ?? '',
+      'image': apiRoom['image'] ?? 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1974',
+      'amenities': _extractAmenities(apiRoom),
+      'size': 'N/A',
+    };
+  }
+
+  List<String> _extractAmenities(Map<String, dynamic> apiRoom) {
+    final amenities = <String>[];
+    if (apiRoom['hasWifi'] == true) amenities.add('Free WiFi');
+    if (apiRoom['hasTv'] == true) amenities.add('Smart TV');
+    if (apiRoom['hasAc'] == true) amenities.add('Air Conditioning');
+    if (apiRoom['hasBreakfast'] == true) amenities.add('Breakfast');
+    if (apiRoom['hasParking'] == true) amenities.add('Parking');
+    return amenities;
   }
 
   @override
@@ -185,26 +184,32 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> with SingleTi
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildSearchSummary(),
-          Expanded(
-            child: FadeTransition(
-              opacity: _fadeIn,
-              child: SlideTransition(
-                position: _slideUp,
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _sortedRooms.length,
-                  itemBuilder: (context, index) {
-                    return _buildRoomCard(_sortedRooms[index]);
-                  },
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
+              : Column(
+                  children: [
+                    _buildSearchSummary(),
+                    Expanded(
+                      child: _sortedRooms.isEmpty
+                          ? const Center(child: Text('No rooms available.'))
+                          : FadeTransition(
+                              opacity: _fadeIn,
+                              child: SlideTransition(
+                                position: _slideUp,
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.all(16),
+                                  itemCount: _sortedRooms.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildRoomCard(_sortedRooms[index]);
+                                  },
+                                ),
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

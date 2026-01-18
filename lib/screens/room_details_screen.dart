@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'checkout_screen.dart';
+import 'search_results_screen.dart';
 import 'package:booking_app/models/room_model.dart';
 import 'package:booking_app/services/room_service.dart';
 
@@ -437,6 +438,17 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             width: double.infinity, height: 60,
             child: ElevatedButton(
               onPressed: () {
+                // Use last filter payload if available
+                final filter = SearchResultsScreenState.lastFilterPayload;
+                final checkInDate = filter != null
+                    ? DateTime.parse(filter['checkIn'])
+                    : _checkInDate;
+                final checkOutDate = filter != null
+                    ? DateTime.parse(filter['checkOut'])
+                    : _checkOutDate;
+                final adults = filter != null ? filter['adults'] as int : _adults;
+                final children = filter != null ? filter['children'] as int : _children;
+                final nights = checkOutDate.difference(checkInDate).inDays;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -444,11 +456,11 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       roomName: _room?.title ?? 'Room',
                       roomCode: _room?.roomCode ?? 'ROOM-00001',
                       pricePerNight: (_room?.pricePerNight ?? 0).toDouble(),
-                      adults: _adults,
-                      children: _children,
-                      checkInDate: _checkInDate,
-                      checkOutDate: _checkOutDate,
-                      nights: _checkOutDate.difference(_checkInDate).inDays,
+                      adults: adults,
+                      children: children,
+                      checkInDate: checkInDate,
+                      checkOutDate: checkOutDate,
+                      nights: nights,
                     ),
                   ),
                 );

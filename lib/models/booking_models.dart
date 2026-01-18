@@ -33,6 +33,8 @@ class BookingRequest {
   final DateTime checkOutDate;
   final String paymentMethod;
   final int numberOfGuests;
+  final int adult;
+  final int child;
   final double totalPayment;
 
   BookingRequest({
@@ -42,6 +44,8 @@ class BookingRequest {
     required this.checkOutDate,
     required this.paymentMethod,
     required this.numberOfGuests,
+    required this.adult,
+    required this.child,
     required this.totalPayment,
   });
 
@@ -52,6 +56,8 @@ class BookingRequest {
     'checkOutDate': checkOutDate.toUtc().toIso8601String(),
     'paymentMethod': paymentMethod,
     'numberOfGuests': numberOfGuests,
+    'adult': adult,
+    'child': child,
     'totalPayment': totalPayment,
   };
 }
@@ -66,6 +72,8 @@ class BookingData {
   final DateTime checkInDate;
   final DateTime checkOutDate;
   final int numberOfGuests;
+  final int adult;
+  final int child;
   final String paymentMethod;
   final double roomRate;
   final double serviceFee;
@@ -84,6 +92,8 @@ class BookingData {
     required this.checkInDate,
     required this.checkOutDate,
     required this.numberOfGuests,
+    required this.adult,
+    required this.child,
     required this.paymentMethod,
     required this.roomRate,
     required this.serviceFee,
@@ -100,13 +110,15 @@ class BookingData {
     guestName: json['guestName'] ?? '',
     guestEmail: json['guestEmail'] ?? '',
     phoneNumber: json['phoneNumber'] ?? '',
-    checkInDate: json['checkInDate'] != null 
-      ? DateTime.parse(json['checkInDate'].toString())
-      : DateTime.now(),
-    checkOutDate: json['checkOutDate'] != null 
-      ? DateTime.parse(json['checkOutDate'].toString())
-      : DateTime.now(),
+    checkInDate: json['checkInDate'] != null
+        ? DateTime.parse(json['checkInDate'].toString())
+        : DateTime.now(),
+    checkOutDate: json['checkOutDate'] != null
+        ? DateTime.parse(json['checkOutDate'].toString())
+        : DateTime.now(),
     numberOfGuests: json['numberOfGuests'] ?? 0,
+    adult: json['adult'] ?? 0,
+    child: json['child'] ?? 0,
     paymentMethod: json['paymentMethod'] ?? '',
     roomRate: (json['roomRate'] ?? 0).toDouble(),
     serviceFee: (json['serviceFee'] ?? 0).toDouble(),
@@ -128,21 +140,19 @@ class BookingResponse {
     required this.footer,
   });
 
-  factory BookingResponse.fromJson(Map<String, dynamic> json) => BookingResponse(
-    header: ResponseHeader.fromJson(json['header'] ?? {}),
-    data: BookingData.fromJson(json['data'] ?? {}),
-    footer: ResponseFooter.fromJson(json['footer'] ?? {}),
-  );
+  factory BookingResponse.fromJson(Map<String, dynamic> json) =>
+      BookingResponse(
+        header: ResponseHeader.fromJson(json['header'] ?? {}),
+        data: BookingData.fromJson(json['data'] ?? {}),
+        footer: ResponseFooter.fromJson(json['footer'] ?? {}),
+      );
 }
 
 class ResponseHeader {
   final int status;
   final String message;
 
-  ResponseHeader({
-    required this.status,
-    required this.message,
-  });
+  ResponseHeader({required this.status, required this.message});
 
   factory ResponseHeader.fromJson(Map<String, dynamic> json) => ResponseHeader(
     status: json['status'] ?? 0,
@@ -153,13 +163,10 @@ class ResponseHeader {
 class ResponseFooter {
   final int count;
 
-  ResponseFooter({
-    required this.count,
-  });
+  ResponseFooter({required this.count});
 
-  factory ResponseFooter.fromJson(Map<String, dynamic> json) => ResponseFooter(
-    count: json['count'] ?? 0,
-  );
+  factory ResponseFooter.fromJson(Map<String, dynamic> json) =>
+      ResponseFooter(count: json['count'] ?? 0);
 }
 
 class BookingListItem {
@@ -187,22 +194,23 @@ class BookingListItem {
     required this.isCancelled,
   });
 
-  factory BookingListItem.fromJson(Map<String, dynamic> json) => BookingListItem(
-    checkinCode: json['checkinCode'] ?? '',
-    roomCode: json['roomCode'] ?? '',
-    roomName: json['roomName'] ?? '',
-    roomImage: json['roomImage'] ?? '',
-    checkInDate: json['checkInDate'] != null 
-      ? DateTime.parse(json['checkInDate'].toString())
-      : DateTime.now(),
-    checkOutDate: json['checkOutDate'] != null 
-      ? DateTime.parse(json['checkOutDate'].toString())
-      : DateTime.now(),
-    totalPrice: (json['totalPrice'] ?? 0).toDouble(),
-    status: json['status'] ?? '',
-    isCheckout: json['isCheckout'] ?? false,
-    isCancelled: json['isCancelled'] ?? false,
-  );
+  factory BookingListItem.fromJson(Map<String, dynamic> json) =>
+      BookingListItem(
+        checkinCode: json['checkinCode'] ?? '',
+        roomCode: json['roomCode'] ?? '',
+        roomName: json['roomName'] ?? '',
+        roomImage: json['roomImage'] ?? '',
+        checkInDate: json['checkInDate'] != null
+            ? DateTime.parse(json['checkInDate'].toString())
+            : DateTime.now(),
+        checkOutDate: json['checkOutDate'] != null
+            ? DateTime.parse(json['checkOutDate'].toString())
+            : DateTime.now(),
+        totalPrice: (json['totalPrice'] ?? 0).toDouble(),
+        status: json['status'] ?? '',
+        isCheckout: json['isCheckout'] ?? false,
+        isCancelled: json['isCancelled'] ?? false,
+      );
 }
 
 class BookingListResponse {
@@ -216,11 +224,17 @@ class BookingListResponse {
     required this.footer,
   });
 
-  factory BookingListResponse.fromJson(Map<String, dynamic> json) => BookingListResponse(
-    header: ResponseHeader.fromJson(json['header'] ?? {}),
-    data: (json['data'] as List<dynamic>?)
-        ?.map((item) => BookingListItem.fromJson(item as Map<String, dynamic>))
-        .toList() ?? [],
-    footer: ResponseFooter.fromJson(json['footer'] ?? {}),
-  );
+  factory BookingListResponse.fromJson(Map<String, dynamic> json) =>
+      BookingListResponse(
+        header: ResponseHeader.fromJson(json['header'] ?? {}),
+        data:
+            (json['data'] as List<dynamic>?)
+                ?.map(
+                  (item) =>
+                      BookingListItem.fromJson(item as Map<String, dynamic>),
+                )
+                .toList() ??
+            [],
+        footer: ResponseFooter.fromJson(json['footer'] ?? {}),
+      );
 }

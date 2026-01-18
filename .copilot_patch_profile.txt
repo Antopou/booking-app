@@ -1,0 +1,9 @@
+Line 30: Remove this line
+  String? _errorMessage;
+
+Lines 60-62: Replace
+      setState(() {
+        _errorMessage = e.toString();
+      });
+with
+      // Error fetching profile, user will see default/loading state

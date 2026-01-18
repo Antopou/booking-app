@@ -1,0 +1,7 @@
+Line 25: Remove this line
+  late Future<BookingListResponse> _bookingsFuture;
+
+Line 50: Change from
+    _bookingsFuture = _fetchBookings();
+to
+    _fetchBookings();

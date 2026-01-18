@@ -27,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final UserService _userService = UserService();
   bool? _isAuthenticated;
   UserProfile? _userProfile;
+  // ignore: unused_field
   String? _errorMessage;
 
   @override

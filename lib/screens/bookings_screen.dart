@@ -15,13 +15,14 @@ class BookingsScreen extends StatefulWidget {
 class _BookingsScreenState extends State<BookingsScreen> {
   int _selectedTab = 0; // 0: Upcoming, 1: Past, 2: Cancelled
   final List<bool> _tabHover = [false, false, false];
-  
+
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
   static const Color lightBackground = Color(0xFFF5F5F5);
 
   final BookingService _bookingService = BookingService();
   final AuthService _authService = AuthService();
+  // ignore: unused_field
   late Future<BookingListResponse> _bookingsFuture;
   List<BookingListItem> _allBookings = [];
   bool _isLoading = true;
@@ -43,7 +44,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
       });
       return;
     }
-    
+
     setState(() {
       _isAuthenticated = true;
     });
@@ -69,16 +70,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   List<BookingListItem> get _upcomingBookings {
+    final now = DateTime.now();
     return _allBookings.where((b) {
-      return !b.isCancelled && 
-             b.status == 'confirmed' &&
-             b.checkInDate.isAfter(DateTime.now());
+      return !b.isCancelled &&
+          b.status == 'confirmed' &&
+          (b.checkInDate.isAfter(now) || b.checkOutDate.isAfter(now));
     }).toList();
   }
 
   List<BookingListItem> get _pastBookings {
+    final now = DateTime.now();
     return _allBookings.where((b) {
-      return !b.isCancelled && b.status == 'completed';
+      return !b.isCancelled &&
+          (b.status == 'completed' ||
+              (b.status == 'confirmed' && b.checkOutDate.isBefore(now)));
     }).toList();
   }
 
@@ -111,7 +116,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
       ),
       body: _isAuthenticated == null
           ? _buildLoadingSpinner()
-          : (_isAuthenticated! ? _buildAuthenticatedContent() : _buildLoginPrompt()),
+          : (_isAuthenticated!
+                ? _buildAuthenticatedContent()
+                : _buildLoginPrompt()),
     );
   }
 
@@ -172,7 +179,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -218,96 +227,115 @@ class _BookingsScreenState extends State<BookingsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-              'Upcoming and past luxury experiences',
-              style: GoogleFonts.poppins(
-                color: Colors.grey.shade500,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
+            'Upcoming and past luxury experiences',
+            style: GoogleFonts.poppins(
+              color: Colors.grey.shade500,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
             ),
-            const SizedBox(height: 30),
+          ),
+          const SizedBox(height: 30),
 
-            // --- STATS ROW ---
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: [
-                  _buildMiniStat('TOTAL STAYS', '${_allBookings.length.toString().padLeft(2, '0')}', darkGrey),
-                  const SizedBox(width: 12),
-                  _buildMiniStat('UPCOMING', '${_upcomingBookings.length.toString().padLeft(2, '0')}', brandGold),
-                  const SizedBox(width: 12),
-                  _buildMiniStat('TOTAL SPENT', '\$${_totalSpent.toStringAsFixed(0)}', Colors.blueGrey),
-                ],
-              ),
+          // --- STATS ROW ---
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _buildMiniStat(
+                  'TOTAL STAYS',
+                  '${_allBookings.length.toString().padLeft(2, '0')}',
+                  darkGrey,
+                ),
+                const SizedBox(width: 12),
+                _buildMiniStat(
+                  'UPCOMING',
+                  '${_upcomingBookings.length.toString().padLeft(2, '0')}',
+                  brandGold,
+                ),
+                const SizedBox(width: 12),
+                _buildMiniStat(
+                  'TOTAL SPENT',
+                  '\$${_totalSpent.toStringAsFixed(0)}',
+                  Colors.blueGrey,
+                ),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 35),
+          const SizedBox(height: 35),
 
-            // --- OPTION 2 TAB SELECTOR (With Refined Hover) ---
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: lightBackground,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  _buildTab('Upcoming', 0),
-                  _buildTab('Past', 1),
-                  _buildTab('Cancelled', 2),
-                ],
-              ),
+          // --- OPTION 2 TAB SELECTOR (With Refined Hover) ---
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: lightBackground,
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 30),
+            child: Row(
+              children: [
+                _buildTab('Upcoming', 0),
+                _buildTab('Past', 1),
+                _buildTab('Cancelled', 2),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
 
-            // --- BOOKING CONTENT ---
-            _isLoading
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 60),
-                      child: CircularProgressIndicator(color: brandGold),
-                    ),
-                  )
-                : _errorMessage != null
-                    ? _buildErrorState()
-                    : AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: _selectedTab == 0
-                            ? (_upcomingBookings.isEmpty
-                                ? _buildEmptyState()
-                                : ListView.separated(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: _upcomingBookings.length,
-                                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                                    itemBuilder: (_, index) => _buildBookingCard(_upcomingBookings[index]),
-                                  ))
-                            : _selectedTab == 1
-                                ? (_pastBookings.isEmpty
-                                    ? _buildEmptyState()
-                                    : ListView.separated(
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        itemCount: _pastBookings.length,
-                                        separatorBuilder: (_, __) => const SizedBox(height: 16),
-                                        itemBuilder: (_, index) => _buildBookingCard(_pastBookings[index]),
-                                      ))
-                                : (_cancelledBookings.isEmpty
-                                    ? _buildEmptyState()
-                                    : ListView.separated(
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        itemCount: _cancelledBookings.length,
-                                        separatorBuilder: (_, __) => const SizedBox(height: 16),
-                                        itemBuilder: (_, index) => _buildBookingCard(_cancelledBookings[index]),
-                                      )),
-                      ),
+          // --- BOOKING CONTENT ---
+          _isLoading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 60),
+                    child: CircularProgressIndicator(color: brandGold),
+                  ),
+                )
+              : _errorMessage != null
+              ? _buildErrorState()
+              : AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _selectedTab == 0
+                      ? (_upcomingBookings.isEmpty
+                            ? _buildEmptyState()
+                            : ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _upcomingBookings.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 16),
+                                itemBuilder: (_, index) =>
+                                    _buildBookingCard(_upcomingBookings[index]),
+                              ))
+                      : _selectedTab == 1
+                      ? (_pastBookings.isEmpty
+                            ? _buildEmptyState()
+                            : ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _pastBookings.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 16),
+                                itemBuilder: (_, index) =>
+                                    _buildBookingCard(_pastBookings[index]),
+                              ))
+                      : (_cancelledBookings.isEmpty
+                            ? _buildEmptyState()
+                            : ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _cancelledBookings.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 16),
+                                itemBuilder: (_, index) => _buildBookingCard(
+                                  _cancelledBookings[index],
+                                ),
+                              )),
+                ),
 
-            const SizedBox(height: 120),
-          ],
-        ),
-      );
+          const SizedBox(height: 120),
+        ],
+      ),
+    );
   }
 
   Widget _buildMiniStat(String title, String value, Color accentColor) {
@@ -323,26 +351,30 @@ class _BookingsScreenState extends State<BookingsScreen> {
             color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: GoogleFonts.poppins(
-                color: Colors.grey.shade400,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              )),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              color: Colors.grey.shade400,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(value,
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
-                color: accentColor,
-              )),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              color: accentColor,
+            ),
+          ),
         ],
       ),
     );
@@ -366,12 +398,12 @@ class _BookingsScreenState extends State<BookingsScreen> {
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              // PRIORITY: 
+              // PRIORITY:
               // 1. If active, stay white.
               // 2. If NOT active and mouse is on it, stay dark grey.
               // 3. Otherwise, stay transparent.
-              color: active 
-                  ? Colors.white 
+              color: active
+                  ? Colors.white
                   : (hovering ? Colors.grey.shade500 : Colors.transparent),
               borderRadius: BorderRadius.circular(16),
               boxShadow: active
@@ -380,15 +412,19 @@ class _BookingsScreenState extends State<BookingsScreen> {
                         color: Colors.black.withOpacity(0.08),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ]
                   : [],
             ),
             child: Text(
               label,
               style: GoogleFonts.poppins(
-                color: active ? darkGrey : (hovering ? Colors.black : Colors.grey.shade600),
-                fontWeight: active || hovering ? FontWeight.w600 : FontWeight.w500,
+                color: active
+                    ? darkGrey
+                    : (hovering ? Colors.black : Colors.grey.shade600),
+                fontWeight: active || hovering
+                    ? FontWeight.w600
+                    : FontWeight.w500,
                 fontSize: 13,
               ),
             ),
@@ -399,14 +435,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   Widget _buildBookingCard(BookingListItem booking) {
-    final statusColor = booking.isCancelled 
-        ? Colors.red.shade600 
-        : booking.status == 'confirmed' 
-            ? Colors.green.shade600 
-            : Colors.blue.shade600;
-    
-    final statusText = booking.isCancelled ? 'Cancelled' : (booking.status[0].toUpperCase() + booking.status.substring(1));
-    
+    final statusColor = booking.isCancelled
+        ? Colors.red.shade600
+        : booking.status == 'confirmed'
+        ? Colors.green.shade600
+        : Colors.blue.shade600;
+
+    final statusText = booking.isCancelled
+        ? 'Cancelled'
+        : (booking.status[0].toUpperCase() + booking.status.substring(1));
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -433,7 +471,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   errorBuilder: (_, __, ___) => Container(
                     height: 180,
                     color: Colors.grey.shade200,
-                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
                 Positioned(
@@ -462,7 +503,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _dateInfo('CHECK-IN', _formatDate(booking.checkInDate)),
-                    Container(height: 30, width: 1, color: Colors.grey.shade100),
+                    Container(
+                      height: 30,
+                      width: 1,
+                      color: Colors.grey.shade100,
+                    ),
                     _dateInfo('CHECK-OUT', _formatDate(booking.checkOutDate)),
                   ],
                 ),
@@ -473,34 +518,47 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('TOTAL PRICE',
-                            style: GoogleFonts.poppins(
-                                color: Colors.grey,
-                                fontSize: 10,
-                                letterSpacing: 1.0)),
-                        Text('\$${booking.totalPrice.toStringAsFixed(2)}',
-                            style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                color: darkGrey)),
+                        Text(
+                          'TOTAL PRICE',
+                          style: GoogleFonts.poppins(
+                            color: Colors.grey,
+                            fontSize: 10,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        Text(
+                          '\$${booking.totalPrice.toStringAsFixed(2)}',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: darkGrey,
+                          ),
+                        ),
                       ],
                     ),
                     ElevatedButton(
-                      onPressed: () => _showManageBookingSheet(context, booking),
+                      onPressed: () =>
+                          _showManageBookingSheet(context, booking),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: darkGrey,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      child: Text('MANAGE',
-                          style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                              letterSpacing: 1.0)),
+                      child: Text(
+                        'MANAGE',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -513,7 +571,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   String _formatDate(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
@@ -577,16 +648,24 @@ class _BookingsScreenState extends State<BookingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: GoogleFonts.poppins(
-                color: Colors.grey.shade400,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2)),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            color: Colors.grey.shade400,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(date,
-            style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w500, fontSize: 15, color: darkGrey)),
+        Text(
+          date,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: darkGrey,
+          ),
+        ),
       ],
     );
   }
@@ -595,18 +674,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)
-          ]),
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
+        ],
+      ),
       child: Text(
         txt.toUpperCase(),
         style: GoogleFonts.poppins(
-            color: col,
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.0),
+          color: col,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+        ),
       ),
     );
   }
@@ -617,16 +698,25 @@ class _BookingsScreenState extends State<BookingsScreen> {
       child: Column(
         children: [
           const SizedBox(height: 80),
-          Icon(Icons.auto_awesome_outlined,
-              size: 60, color: brandGold.withOpacity(0.3)),
+          Icon(
+            Icons.auto_awesome_outlined,
+            size: 60,
+            color: brandGold.withOpacity(0.3),
+          ),
           const SizedBox(height: 24),
-          Text('No History Yet',
-              style: GoogleFonts.poppins(
-                  fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(
+            'No History Yet',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Your luxury stays will appear here.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(color: Colors.grey, fontSize: 13)),
+          Text(
+            'Your luxury stays will appear here.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(color: Colors.grey, fontSize: 13),
+          ),
         ],
       ),
     );
@@ -660,7 +750,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(24),
@@ -703,7 +793,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildActionButton(
                     icon: Icons.edit_calendar_outlined,
                     title: 'Modify Dates',
@@ -712,16 +802,16 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     onTap: () => _showModifyDatesDialog(context),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   _buildActionButton(
                     icon: Icons.group_outlined,
                     title: 'Update Guests',
                     subtitle: 'Change number of guests',
                     color: Colors.blue,
-                    onTap: () => _showUpdateGuestsDialog(context),
+                    onTap: () => _showUpdateGuestsDialog(context, booking),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   _buildActionButton(
                     icon: Icons.receipt_long_outlined,
                     title: 'View Confirmation',
@@ -730,7 +820,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     onTap: () => _showConfirmationDialog(context),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   _buildActionButton(
                     icon: Icons.support_agent_outlined,
                     title: 'Contact Support',
@@ -750,7 +840,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildActionButton(
                     icon: Icons.cancel_outlined,
                     title: 'Cancel Booking',
@@ -758,7 +848,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     color: Colors.red,
                     onTap: () => _showCancelBookingDialog(context),
                   ),
-                  
+
                   const SizedBox(height: 40),
                 ],
               ),
@@ -938,8 +1028,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Modify Dates', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Modify Dates',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -947,10 +1042,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
               children: [
                 Text(
                   'Select new check-in and check-out dates',
-                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600),
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Check-in Date Selector
                 InkWell(
                   onTap: () async {
@@ -971,8 +1069,12 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     if (picked != null) {
                       setDialogState(() {
                         checkInDate = picked;
-                        if (checkOutDate.isBefore(checkInDate.add(const Duration(days: 1)))) {
-                          checkOutDate = checkInDate.add(const Duration(days: 1));
+                        if (checkOutDate.isBefore(
+                          checkInDate.add(const Duration(days: 1)),
+                        )) {
+                          checkOutDate = checkInDate.add(
+                            const Duration(days: 1),
+                          );
                         }
                       });
                     }
@@ -1011,13 +1113,17 @@ class _BookingsScreenState extends State<BookingsScreen> {
                             ],
                           ),
                         ),
-                        Icon(Icons.edit_calendar, color: Colors.grey.shade400, size: 20),
+                        Icon(
+                          Icons.edit_calendar,
+                          color: Colors.grey.shade400,
+                          size: 20,
+                        ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Check-out Date Selector
                 InkWell(
                   onTap: () async {
@@ -1073,13 +1179,17 @@ class _BookingsScreenState extends State<BookingsScreen> {
                             ],
                           ),
                         ),
-                        Icon(Icons.edit_calendar, color: Colors.grey.shade400, size: 20),
+                        Icon(
+                          Icons.edit_calendar,
+                          color: Colors.grey.shade400,
+                          size: 20,
+                        ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Duration Info
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -1108,7 +1218,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('CANCEL', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
+              child: Text(
+                'CANCEL',
+                style: GoogleFonts.poppins(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -1128,10 +1244,21 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 backgroundColor: brandGold,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
-              child: Text('SAVE CHANGES', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 12)),
+              child: Text(
+                'SAVE CHANGES',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ],
         ),
@@ -1140,29 +1267,63 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   String _getMonthName(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
   }
 
-  void _showUpdateGuestsDialog(BuildContext context) {
+  void _showUpdateGuestsDialog(
+    BuildContext context,
+    BookingListItem booking,
+  ) async {
+    // Prefill from API
     int adults = 2;
     int children = 1;
+    try {
+      final details = await _bookingService.fetchBookingByCheckinCode(
+        booking.checkinCode,
+      );
+      adults = details.data.adult;
+      children = details.data.child;
+    } catch (_) {
+      // fallback to defaults if API fails
+    }
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Update Guests', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Update Guests',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Adjust the number of guests for your stay',
-                style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600),
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                ),
               ),
               const SizedBox(height: 24),
-              
+
               // Adults Counter
               _buildGuestCounter(
                 label: 'Adults',
@@ -1180,7 +1341,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Children Counter
               _buildGuestCounter(
                 label: 'Children',
@@ -1198,7 +1359,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Total Summary
               Container(
                 padding: const EdgeInsets.all(12),
@@ -1227,30 +1388,109 @@ class _BookingsScreenState extends State<BookingsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('CANCEL', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
+              child: Text(
+                'CANCEL',
+                style: GoogleFonts.poppins(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
+
+                // Show loading indicator
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      'Guest count updated: $adults Adult${adults != 1 ? 's' : ''}, $children Child${children != 1 ? 'ren' : ''}',
-                      style: GoogleFonts.poppins(),
+                    content: Row(
+                      children: [
+                        SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Updating guest count...',
+                          style: GoogleFonts.poppins(),
+                        ),
+                      ],
                     ),
-                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 30),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
+
+                try {
+                  // Call the API to update the booking
+                  await _bookingService.updateBooking(
+                    checkinCode: booking.checkinCode,
+                    checkInDate: booking.checkInDate,
+                    checkOutDate: booking.checkOutDate,
+                    numberOfGuests: adults + children,
+                    adult: adults,
+                    child: children,
+                  );
+
+                  // Refresh bookings list
+                  await _fetchBookings();
+
+                  if (!mounted) return;
+
+                  // Hide loading and show success
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Update success',
+                        style: GoogleFonts.poppins(),
+                      ),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+
+                  // Hide loading and show error
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Failed to update: ${e.toString()}',
+                        style: GoogleFonts.poppins(),
+                      ),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: brandGold,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
-              child: Text('SAVE CHANGES', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 12)),
+              child: Text(
+                'SAVE CHANGES',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ],
         ),
@@ -1300,7 +1540,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
               IconButton(
                 onPressed: onDecrement,
                 icon: const Icon(Icons.remove_circle_outline),
-                color: count <= (label == 'Adults' ? 1 : 0) ? Colors.grey.shade300 : brandGold,
+                color: count <= (label == 'Adults' ? 1 : 0)
+                    ? Colors.grey.shade300
+                    : brandGold,
                 iconSize: 28,
               ),
               Container(
@@ -1337,7 +1579,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             const SizedBox(width: 12),
-            Text('Booking Confirmed', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(
+              'Booking Confirmed',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -1355,7 +1603,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('CLOSE', style: GoogleFonts.poppins(color: brandGold, fontWeight: FontWeight.w600)),
+            child: Text(
+              'CLOSE',
+              style: GoogleFonts.poppins(
+                color: brandGold,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -1368,8 +1622,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.poppins(color: Colors.grey.shade600, fontSize: 13)),
-          Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: Colors.grey.shade600,
+              fontSize: 13,
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
         ],
       ),
     );
@@ -1380,26 +1646,47 @@ class _BookingsScreenState extends State<BookingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Contact Support', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Contact Support',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: Icon(Icons.phone, color: brandGold),
-              title: Text('Call Us', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-              subtitle: Text('+1 (800) 555-LUXE', style: GoogleFonts.poppins(fontSize: 12)),
+              title: Text(
+                'Call Us',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                '+1 (800) 555-LUXE',
+                style: GoogleFonts.poppins(fontSize: 12),
+              ),
               onTap: () {},
             ),
             ListTile(
               leading: Icon(Icons.email, color: brandGold),
-              title: Text('Email Support', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-              subtitle: Text('support@luxestay.com', style: GoogleFonts.poppins(fontSize: 12)),
+              title: Text(
+                'Email Support',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                'support@luxestay.com',
+                style: GoogleFonts.poppins(fontSize: 12),
+              ),
               onTap: () {},
             ),
             ListTile(
               leading: Icon(Icons.chat_bubble_outline, color: brandGold),
-              title: Text('Live Chat', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-              subtitle: Text('Available 24/7', style: GoogleFonts.poppins(fontSize: 12)),
+              title: Text(
+                'Live Chat',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                'Available 24/7',
+                style: GoogleFonts.poppins(fontSize: 12),
+              ),
               onTap: () {},
             ),
           ],
@@ -1407,7 +1694,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('CLOSE', style: GoogleFonts.poppins(color: brandGold, fontWeight: FontWeight.w600)),
+            child: Text(
+              'CLOSE',
+              style: GoogleFonts.poppins(
+                color: brandGold,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -1419,7 +1712,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Cancel Booking?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Cancel Booking?',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1438,12 +1734,19 @@ class _BookingsScreenState extends State<BookingsScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline, color: Colors.green.shade700, size: 20),
+                  Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.green.shade700,
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Free cancellation - Full refund will be processed within 3-5 business days',
-                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.green.shade700,
+                      ),
                     ),
                   ),
                 ],
@@ -1454,7 +1757,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('KEEP BOOKING', style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w600)),
+            child: Text(
+              'KEEP BOOKING',
+              style: GoogleFonts.poppins(
+                color: Colors.grey,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -1462,13 +1771,22 @@ class _BookingsScreenState extends State<BookingsScreen> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Booking cancelled successfully', style: GoogleFonts.poppins()),
+                  content: Text(
+                    'Booking cancelled successfully',
+                    style: GoogleFonts.poppins(),
+                  ),
                   backgroundColor: Colors.green,
                   behavior: SnackBarBehavior.floating,
                 ),
               );
             },
-            child: Text('CANCEL BOOKING', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
+            child: Text(
+              'CANCEL BOOKING',
+              style: GoogleFonts.poppins(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

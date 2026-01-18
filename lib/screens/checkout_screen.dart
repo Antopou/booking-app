@@ -192,13 +192,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: 16),
           _buildTextField('Email', _emailController, Icons.email_outlined),
           const SizedBox(height: 16),
-          _buildTextField('Phone Number', _phoneController, Icons.phone_outlined),
+          _buildTextField(
+            'Phone Number',
+            _phoneController,
+            Icons.phone_outlined,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+  ) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
@@ -251,7 +259,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Cards
           _buildCategoryHeader('Cards', _cardsExpanded, () {
             setState(() => _cardsExpanded = !_cardsExpanded);
@@ -259,19 +267,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            child: _cardsExpanded ? Column(
-              children: [
-                const SizedBox(height: 10),
-                _buildPaymentOption(
-                  'credit_card',
-                  'Credit / Debit Card',
-                  Icons.credit_card,
-                ),
-              ],
-            ) : const SizedBox.shrink(),
+            child: _cardsExpanded
+                ? Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      _buildPaymentOption(
+                        'credit_card',
+                        'Credit / Debit Card',
+                        Icons.credit_card,
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 20),
-          
+
           // Bank Transfer
           _buildCategoryHeader('Bank Transfer', _bankTransferExpanded, () {
             setState(() => _bankTransferExpanded = !_bankTransferExpanded);
@@ -279,31 +289,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            child: _bankTransferExpanded ? Column(
-              children: [
-                const SizedBox(height: 10),
-                _buildPaymentOption(
-                  'aba',
-                  'ABA Bank',
-                  Icons.account_balance,
-                ),
-                const SizedBox(height: 8),
-                _buildPaymentOption(
-                  'aceleda',
-                  'ACELEDA Bank',
-                  Icons.account_balance,
-                ),
-                const SizedBox(height: 8),
-                _buildPaymentOption(
-                  'wing',
-                  'Wing Bank',
-                  Icons.account_balance,
-                ),
-              ],
-            ) : const SizedBox.shrink(),
+            child: _bankTransferExpanded
+                ? Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      _buildPaymentOption(
+                        'aba',
+                        'ABA Bank',
+                        Icons.account_balance,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildPaymentOption(
+                        'aceleda',
+                        'ACELEDA Bank',
+                        Icons.account_balance,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildPaymentOption(
+                        'wing',
+                        'Wing Bank',
+                        Icons.account_balance,
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 20),
-          
+
           // QR Payment
           _buildCategoryHeader('QR Payment', _qrPaymentExpanded, () {
             setState(() => _qrPaymentExpanded = !_qrPaymentExpanded);
@@ -311,19 +323,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            child: _qrPaymentExpanded ? Column(
-              children: [
-                const SizedBox(height: 10),
-                _buildPaymentOption(
-                  'khqr',
-                  'KHQR',
-                  Icons.qr_code_2,
-                ),
-              ],
-            ) : const SizedBox.shrink(),
+            child: _qrPaymentExpanded
+                ? Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      _buildPaymentOption('khqr', 'KHQR', Icons.qr_code_2),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 20),
-          
+
           // Digital Wallets
           _buildCategoryHeader('Digital Wallets', _digitalWalletsExpanded, () {
             setState(() => _digitalWalletsExpanded = !_digitalWalletsExpanded);
@@ -331,29 +341,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            child: _digitalWalletsExpanded ? Column(
-              children: [
-                const SizedBox(height: 10),
-                _buildPaymentOption(
-                  'apple_pay',
-                  'Apple Pay',
-                  Icons.apple,
-                ),
-                const SizedBox(height: 8),
-                _buildPaymentOption(
-                  'google_pay',
-                  'Google Pay',
-                  Icons.g_mobiledata,
-                ),
-              ],
-            ) : const SizedBox.shrink(),
+            child: _digitalWalletsExpanded
+                ? Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      _buildPaymentOption(
+                        'apple_pay',
+                        'Apple Pay',
+                        Icons.apple,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildPaymentOption(
+                        'google_pay',
+                        'Google Pay',
+                        Icons.g_mobiledata,
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
     );
   }
-  
-  Widget _buildCategoryHeader(String label, bool isExpanded, VoidCallback onTap) {
+
+  Widget _buildCategoryHeader(
+    String label,
+    bool isExpanded,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -454,7 +470,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             decoration: InputDecoration(
               labelText: 'Card Number',
               hintText: '1234 5678 9012 3456',
-              prefixIcon: const Icon(Icons.credit_card, color: brandGold, size: 20),
+              prefixIcon: const Icon(
+                Icons.credit_card,
+                color: brandGold,
+                size: 20,
+              ),
               labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
               filled: true,
               fillColor: Colors.grey[50],
@@ -483,7 +503,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   decoration: InputDecoration(
                     labelText: 'Expiry',
                     hintText: 'MM/YY',
-                    prefixIcon: const Icon(Icons.calendar_today, color: brandGold, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.calendar_today,
+                      color: brandGold,
+                      size: 18,
+                    ),
                     labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
                     filled: true,
                     fillColor: Colors.grey[50],
@@ -512,7 +536,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   decoration: InputDecoration(
                     labelText: 'CVV',
                     hintText: '123',
-                    prefixIcon: const Icon(Icons.lock_outline, color: brandGold, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: brandGold,
+                      size: 18,
+                    ),
                     labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
                     filled: true,
                     fillColor: Colors.grey[50],
@@ -656,7 +684,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildPriceRow('Room (${widget.nights} nights)', '\$${_roomTotal.toStringAsFixed(2)}'),
+          _buildPriceRow(
+            'Room (${widget.nights} nights)',
+            '\$${_roomTotal.toStringAsFixed(2)}',
+          ),
           _buildPriceRow('Service fee', '\$${_serviceFee.toStringAsFixed(2)}'),
           _buildPriceRow('Taxes', '\$${_taxes.toStringAsFixed(2)}'),
           const Padding(
@@ -697,10 +728,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           Text(
             label,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[400],
-            ),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[400]),
           ),
           Text(
             amount,
@@ -731,23 +759,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           elevation: 0,
         ),
         child: _isLoading
-          ? SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 2,
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                'CONFIRM BOOKING',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.5,
+                ),
               ),
-            )
-          : Text(
-              'CONFIRM BOOKING',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1.5,
-              ),
-            ),
       ),
     );
   }
@@ -761,9 +789,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
     if (_emailController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter your email')));
       return;
     }
     if (_phoneController.text.isEmpty) {
@@ -789,11 +817,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         checkOutDate: widget.checkOutDate,
         paymentMethod: _mapPaymentMethod(_selectedPaymentMethod),
         numberOfGuests: widget.adults + widget.children,
+        adult: widget.adults,
+        child: widget.children,
         totalPayment: _grandTotal,
       );
 
       // Create booking
-      final bookingResponse = await _bookingService.createBooking(bookingRequest);
+      final bookingResponse = await _bookingService.createBooking(
+        bookingRequest,
+      );
 
       if (!mounted) return;
 
@@ -801,7 +833,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _showSuccessDialog(bookingResponse);
     } catch (e) {
       setState(() => _isLoading = false);
-      
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Booking failed: ${e.toString()}')),
@@ -837,11 +869,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 color: brandGold.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.check_circle,
-                color: brandGold,
-                size: 64,
-              ),
+              child: const Icon(Icons.check_circle, color: brandGold, size: 64),
             ),
             const SizedBox(height: 24),
             Text(

@@ -4,25 +4,29 @@ class ApiConfig {
   // For iOS Simulator: use http://localhost:PORT or http://127.0.0.1:PORT
   // For Physical Device: use your computer's IP address http://192.168.x.x:PORT
   static const String baseUrl = 'http://10.0.2.2:8080';
-  
+
   // API Endpoints
   static const String roomsEndpoint = '/rooms/list';
   static const String bookingsEndpoint = '/bookings';
+  static const String bookingsFindEndpoint = '/bookings/find';
+  static const String bookingsUpdateEndpoint = '/bookings/update';
   static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/register';
-   static const String checkTokenEndpoint = '/auth/check-token';
-  
+  static const String checkTokenEndpoint = '/auth/check-token';
+
   // Full URLs
   static String get roomsUrl => '$baseUrl$roomsEndpoint';
   static String get bookingsUrl => '$baseUrl$bookingsEndpoint';
+  static String get bookingsFindUrl => '$baseUrl$bookingsFindEndpoint';
+  static String get bookingsUpdateUrl => '$baseUrl$bookingsUpdateEndpoint';
   static String get loginUrl => '$baseUrl$loginEndpoint';
   static String get registerUrl => '$baseUrl$registerEndpoint';
-   static String get checkTokenUrl => '$baseUrl$checkTokenEndpoint';
-  
+  static String get checkTokenUrl => '$baseUrl$checkTokenEndpoint';
+
   // Timeout durations
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
-  
+
   // Common headers
   static Map<String, String> get defaultHeaders => {
     'Content-Type': 'application/json',
