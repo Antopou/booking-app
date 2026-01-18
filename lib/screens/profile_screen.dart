@@ -193,15 +193,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAuthenticatedProfile() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 24),
-          _buildProfileHeader(),
-          const SizedBox(height: 32),
-          _buildActionSection(context),
-          const SizedBox(height: 40),
-        ],
+    return RefreshIndicator(
+      onRefresh: _checkAuthenticationAndFetchProfile,
+      color: brandGold,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            _buildProfileHeader(),
+            const SizedBox(height: 32),
+            _buildActionSection(context),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }

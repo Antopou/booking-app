@@ -32,6 +32,7 @@ class BookingRequest {
   final DateTime checkInDate;
   final DateTime checkOutDate;
   final String paymentMethod;
+  final int? paymentMethodId;
   final int numberOfGuests;
   final int adult;
   final int child;
@@ -43,6 +44,7 @@ class BookingRequest {
     required this.checkInDate,
     required this.checkOutDate,
     required this.paymentMethod,
+    this.paymentMethodId,
     required this.numberOfGuests,
     required this.adult,
     required this.child,
@@ -55,6 +57,7 @@ class BookingRequest {
     'checkInDate': checkInDate.toUtc().toIso8601String(),
     'checkOutDate': checkOutDate.toUtc().toIso8601String(),
     'paymentMethod': paymentMethod,
+    'paymentMethodId': paymentMethodId,
     'numberOfGuests': numberOfGuests,
     'adult': adult,
     'child': child,
@@ -180,6 +183,9 @@ class BookingListItem {
   final String status;
   final bool isCheckout;
   final bool isCancelled;
+  final int numberOfGuests;
+  final int adult;
+  final int child;
 
   BookingListItem({
     required this.checkinCode,
@@ -192,6 +198,9 @@ class BookingListItem {
     required this.status,
     required this.isCheckout,
     required this.isCancelled,
+    required this.numberOfGuests,
+    required this.adult,
+    required this.child,
   });
 
   factory BookingListItem.fromJson(Map<String, dynamic> json) =>
@@ -210,6 +219,9 @@ class BookingListItem {
         status: json['status'] ?? '',
         isCheckout: json['isCheckout'] ?? false,
         isCancelled: json['isCancelled'] ?? false,
+        numberOfGuests: json['numberOfGuests'] ?? 0,
+        adult: json['adult'] ?? 0,
+        child: json['child'] ?? 0,
       );
 }
 

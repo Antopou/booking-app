@@ -153,4 +153,36 @@ class BookingService {
       throw Exception('Error updating booking: $e');
     }
   }
+
+  /// Cancel a booking
+  Future<void> cancelBooking(String checkinCode) async {
+    try {
+      final token = await _authService.getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('No authentication token available');
+      }
+
+      final headers = {
+        ...ApiConfig.defaultHeaders,
+        'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.post(
+        Uri.parse('${ApiConfig.bookingsCancelUrl}?checkinCode=$checkinCode'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        return;
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else {
+        throw Exception(
+          'Failed to cancel booking: ${response.statusCode} - ${response.body}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error cancelling booking: $e');
+    }
+  }
 }

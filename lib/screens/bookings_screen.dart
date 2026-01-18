@@ -65,7 +65,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
         _errorMessage = e.toString();
         _isLoading = false;
       });
-      throw e;
+      rethrow;
     }
   }
 
@@ -208,66 +208,69 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   Widget _buildAuthenticatedContent() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // --- HEADER SECTION ---
-          const SizedBox(height: 15),
-          Text(
-            'My Stays',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: darkGrey,
-              letterSpacing: -0.5,
+    return RefreshIndicator(
+      onRefresh: _fetchBookings,
+      color: brandGold,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // --- HEADER SECTION ---
+            const SizedBox(height: 15),
+            Text(
+              'My Stays',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: darkGrey,
+                letterSpacing: -0.5,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Upcoming and past luxury experiences',
-            style: GoogleFonts.poppins(
-              color: Colors.grey.shade500,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
+            const SizedBox(height: 4),
+            Text(
+              'Upcoming and past luxury experiences',
+              style: GoogleFonts.poppins(
+                color: Colors.grey.shade500,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
             ),
-          ),
-          const SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-          // --- STATS ROW ---
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                _buildMiniStat(
-                  'TOTAL STAYS',
-                  '${_allBookings.length.toString().padLeft(2, '0')}',
-                  darkGrey,
-                ),
-                const SizedBox(width: 12),
-                _buildMiniStat(
-                  'UPCOMING',
-                  '${_upcomingBookings.length.toString().padLeft(2, '0')}',
-                  brandGold,
-                ),
-                const SizedBox(width: 12),
-                _buildMiniStat(
-                  'TOTAL SPENT',
-                  '\$${_totalSpent.toStringAsFixed(0)}',
-                  Colors.blueGrey,
-                ),
-              ],
+            // --- STATS ROW ---
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildMiniStat(
+                    'TOTAL STAYS',
+                    _allBookings.length.toString().padLeft(2, '0'),
+                    darkGrey,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildMiniStat(
+                    'UPCOMING',
+                    _upcomingBookings.length.toString().padLeft(2, '0'),
+                    brandGold,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildMiniStat(
+                    'TOTAL SPENT',
+                    '\$${_totalSpent.toStringAsFixed(0)}',
+                    Colors.blueGrey,
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 35),
+            const SizedBox(height: 35),
 
-          // --- OPTION 2 TAB SELECTOR (With Refined Hover) ---
-          Container(
-            padding: const EdgeInsets.all(6),
+            // --- OPTION 2 TAB SELECTOR (With Refined Hover) ---
+            Container(
+              padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: lightBackground,
               borderRadius: BorderRadius.circular(20),
@@ -335,6 +338,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
           const SizedBox(height: 120),
         ],
       ),
+    ),
     );
   }
 
@@ -799,7 +803,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     title: 'Modify Dates',
                     subtitle: 'Change check-in or check-out dates',
                     color: brandGold,
-                    onTap: () => _showModifyDatesDialog(context),
+                    onTap: () => _showModifyDatesDialog(context, booking),
                   ),
                   const SizedBox(height: 12),
 
@@ -846,7 +850,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     title: 'Cancel Booking',
                     subtitle: 'Free cancellation until 26 Dec 2025',
                     color: Colors.red,
-                    onTap: () => _showCancelBookingDialog(context),
+                    onTap: () => _showCancelBookingDialog(context, booking),
                   ),
 
                   const SizedBox(height: 40),
@@ -1020,9 +1024,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  void _showModifyDatesDialog(BuildContext context) {
-    DateTime checkInDate = DateTime(2025, 12, 28);
-    DateTime checkOutDate = DateTime(2025, 12, 29);
+  void _showModifyDatesDialog(BuildContext context, BookingListItem booking) {
+    DateTime checkInDate = booking.checkInDate;
+    DateTime checkOutDate = booking.checkOutDate;
 
     showDialog(
       context: context,
@@ -1227,18 +1231,48 @@ class _BookingsScreenState extends State<BookingsScreen> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Dates updated successfully! New check-in: ${checkInDate.day} ${_getMonthName(checkInDate.month)}',
-                      style: GoogleFonts.poppins(),
-                    ),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+              onPressed: () async {
+                try {
+                  // Fetch current guest info to ensure we're sending correct data
+                  int adults = booking.adult > 0 ? booking.adult : 1;
+                  int children = booking.child > 0 ? booking.child : 0;
+                  
+                  await _bookingService.updateBooking(
+                    checkinCode: booking.checkinCode,
+                    checkInDate: checkInDate,
+                    checkOutDate: checkOutDate,
+                    numberOfGuests: adults + children,
+                    adult: adults,
+                    child: children,
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    await _fetchBookings();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Dates updated successfully! New check-in: ${checkInDate.day} ${_getMonthName(checkInDate.month)}',
+                          style: GoogleFonts.poppins(),
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Failed to update dates: $e',
+                          style: GoogleFonts.poppins(),
+                        ),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: brandGold,
@@ -1707,88 +1741,130 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
-  void _showCancelBookingDialog(BuildContext context) {
+  void _showCancelBookingDialog(BuildContext context, BookingListItem booking) {
+    bool isCancelling = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Cancel Booking?',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Are you sure you want to cancel this booking?',
-              style: GoogleFonts.poppins(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.shade200),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Cancel Booking?',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to cancel this booking?',
+                style: GoogleFonts.poppins(fontSize: 14),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    color: Colors.green.shade700,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Free cancellation - Full refund will be processed within 3-5 business days',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.green.shade700,
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline,
+                      color: Colors.green.shade700,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Free cancellation - Full refund will be processed within 3-5 business days',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.green.shade700,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isCancelling ? null : () => Navigator.pop(context),
+              child: Text(
+                'KEEP BOOKING',
+                style: GoogleFonts.poppins(
+                  color: isCancelling ? Colors.grey.shade400 : Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: isCancelling
+                  ? null
+                  : () async {
+                      setDialogState(() => isCancelling = true);
+
+                      try {
+                        await _bookingService.cancelBooking(booking.checkinCode);
+
+                        if (!context.mounted) return;
+
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Booking cancelled successfully',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+
+                        // Refresh bookings list
+                        _fetchBookings();
+                      } catch (e) {
+                        if (!context.mounted) return;
+
+                        Navigator.pop(context);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Failed to cancel booking: ${e.toString()}',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+              child: isCancelling
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.red,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      'CANCEL BOOKING',
+                      style: GoogleFonts.poppins(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'KEEP BOOKING',
-              style: GoogleFonts.poppins(
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Booking cancelled successfully',
-                    style: GoogleFonts.poppins(),
-                  ),
-                  backgroundColor: Colors.green,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: Text(
-              'CANCEL BOOKING',
-              style: GoogleFonts.poppins(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
