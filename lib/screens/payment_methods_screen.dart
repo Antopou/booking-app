@@ -379,7 +379,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedMethodType,
+                initialValue: _selectedMethodType,
                 decoration: InputDecoration(
                   labelText: 'Method Type',
                   border: OutlineInputBorder(
@@ -480,7 +480,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 ),
                 value: _setAsDefault,
                 onChanged: (val) => setState(() => _setAsDefault = val),
-                activeColor: brandGold,
+                activeThumbColor: brandGold,
               ),
               const SizedBox(height: 12),
               SizedBox(

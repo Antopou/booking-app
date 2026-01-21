@@ -247,13 +247,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
               children: [
                 _buildMiniStat(
                   'TOTAL STAYS',
-                  '${_allBookings.length.toString().padLeft(2, '0')}',
+                  _allBookings.length.toString().padLeft(2, '0'),
                   darkGrey,
                 ),
                 const SizedBox(width: 12),
                 _buildMiniStat(
                   'UPCOMING',
-                  '${_upcomingBookings.length.toString().padLeft(2, '0')}',
+                  _upcomingBookings.length.toString().padLeft(2, '0'),
                   brandGold,
                 ),
                 const SizedBox(width: 12),
