@@ -11,6 +11,7 @@ import 'package:booking_app/services/auth_service.dart';
 import 'package:booking_app/services/user_service.dart';
 import 'package:booking_app/models/user_profile_models.dart';
 import 'package:booking_app/utils/route_transitions.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -92,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'LuxeStay Member',
+          AppLocalizations.of(context)!.luxeStayMemberTitle,
           style: GoogleFonts.poppins(
             color: darkGrey,
             fontWeight: FontWeight.w600,
@@ -124,7 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(Icons.person_outline, size: 80, color: brandGold),
             const SizedBox(height: 24),
             Text(
-              'Welcome to LuxeStay',
+              AppLocalizations.of(context)!.welcome,
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -133,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Sign in to access your account and manage your profile',
+              AppLocalizations.of(context)!.signInToAccess,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
@@ -153,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 child: Text(
-                  'SIGN IN',
+                  AppLocalizations.of(context)!.signIn,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -180,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Loading profile...',
+            AppLocalizations.of(context)!.loadingProfile,
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -214,38 +215,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileHeader() {
     final displayName = _userProfile?.displayName ?? 'Loading...';
     final membershipLevel = _userProfile?.membershipLevel ?? 'Standard';
-    final profileImage = _userProfile?.profileImage;
+    final firstLetter = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: brandGold, width: 2),
-                ),
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: profileImage != null
-                      ? NetworkImage(profileImage)
-                      : const NetworkImage(
-                          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070'),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: brandGold, width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: brandGold,
+              child: Text(
+                firstLetter,
+                style: GoogleFonts.poppins(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: darkGrey,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -257,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           Text(
-            '$membershipLevel Member',
+            '$membershipLevel ${AppLocalizations.of(context)!.member}',
             style: GoogleFonts.poppins(
               color: brandGold,
               fontWeight: FontWeight.w500,
@@ -276,20 +269,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader("MEMBERSHIP & ACCOUNT"),
+          _buildSectionHeader(AppLocalizations.of(context)!.membershipAccount),
           const SizedBox(height: 12),
           _buildMenuCard([
-            _buildMenuItem(Icons.person_outline, "Personal Information"),
-            _buildMenuItem(Icons.credit_card_outlined, "Payment Methods"),
-            _buildMenuItem(Icons.loyalty_outlined, "Rewards & Points"),
+            _buildMenuItemButton(Icons.person_outline, AppLocalizations.of(context)!.personalInformation, "personal_info"),
+            _buildMenuItemButton(Icons.credit_card_outlined, AppLocalizations.of(context)!.paymentMethods, "payment_methods"),
+            _buildMenuItemButton(Icons.loyalty_outlined, AppLocalizations.of(context)!.rewardsPoints, "rewards"),
           ]),
           const SizedBox(height: 30),
-          _buildSectionHeader("PREFERENCES"),
+          _buildSectionHeader(AppLocalizations.of(context)!.preferences),
           const SizedBox(height: 12),
           _buildMenuCard([
-            _buildMenuItem(Icons.favorite_border, "Saved Destinations"),
-            _buildMenuItem(Icons.notifications_none, "Notifications"),
-            _buildMenuItem(Icons.language_outlined, "Language & Currency"),
+            _buildMenuItemButton(Icons.favorite_border, AppLocalizations.of(context)!.savedDestinations, "saved_destinations"),
+            _buildMenuItemButton(Icons.notifications_none, AppLocalizations.of(context)!.notifications, "notifications"),
+            _buildMenuItemButton(Icons.language_outlined, AppLocalizations.of(context)!.languageCurrency, "language_currency"),
           ]),
           const SizedBox(height: 40),
           SizedBox(
@@ -304,7 +297,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               child: Text(
-                "SIGN OUT",
+                AppLocalizations.of(context)!.signOut,
                 style: GoogleFonts.poppins(
                   color: Colors.red.shade400,
                   fontWeight: FontWeight.bold,
@@ -317,7 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 20),
           Center(
             child: Text(
-              "Version 2.4.0",
+              AppLocalizations.of(context)!.version,
               style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
             ),
           ),
@@ -356,7 +349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title) {
+  Widget _buildMenuItemButton(IconData icon, String title, String menuId) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Icon(icon, color: darkGrey, size: 22),
@@ -370,14 +363,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
       onTap: () {
-        _handleMenuTap(context, title);
+        _handleMenuTap(context, menuId);
       },
     );
   }
 
-  void _handleMenuTap(BuildContext context, String menuTitle) {
-    switch (menuTitle) {
-      case "Personal Information":
+  void _handleMenuTap(BuildContext context, String menuId) {
+    switch (menuId) {
+      case "personal_info":
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -388,31 +381,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
         break;
-      case "Payment Methods":
+      case "payment_methods":
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const PaymentMethodsScreen()),
         );
         break;
-      case "Rewards & Points":
+      case "rewards":
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const RewardsPointsScreen()),
         );
         break;
-      case "Saved Destinations":
+      case "saved_destinations":
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SavedDestinationsScreen()),
         );
         break;
-      case "Notifications":
+      case "notifications":
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const NotificationsScreen()),
         );
         break;
-      case "Language & Currency":
+      case "language_currency":
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const LanguageCurrencyScreen()),

@@ -39,7 +39,7 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
-    ndkVersion "25.1.8937393"
+    ndkVersion "26.1.10909125"
 
     defaultConfig {
         applicationId "com.example.booking_app"

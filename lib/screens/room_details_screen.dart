@@ -4,6 +4,7 @@ import 'checkout_screen.dart';
 import 'search_results_screen.dart';
 import 'package:booking_app/models/room_model.dart';
 import 'package:booking_app/services/room_service.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 
 class RoomDetailsScreen extends StatefulWidget {
   final int roomId;
@@ -86,7 +87,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
             const SizedBox(height: 16),
             Text(
-              'Error loading room',
+              AppLocalizations.of(context)!.errorLoadingRoom,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -111,7 +112,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+              child: Text(AppLocalizations.of(context)!.retry, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -134,7 +135,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               children: [
                 _buildTitleSection(),
                 const SizedBox(height: 32),
-                _buildSectionTitle('About This Room'),
+                _buildSectionTitle(AppLocalizations.of(context)!.aboutThisRoom),
                 const SizedBox(height: 12),
                 Text(
                   _room?.description ?? 'No description available',
@@ -145,21 +146,21 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                _buildSectionTitle('Room Amenities'),
+                _buildSectionTitle(AppLocalizations.of(context)!.roomAmenities),
                 const SizedBox(height: 16),
                 _buildAmenitiesWrap(),
                 const SizedBox(height: 32),
-                _buildSectionTitle('Policies & Information'),
+                _buildSectionTitle(AppLocalizations.of(context)!.policiesInformation),
                 const SizedBox(height: 16),
                 _buildPolicyCard(
                   Icons.access_time_rounded,
-                  'Check-in/out',
-                  'Check-in: 3:00 PM • Check-out: 11:00 AM',
+                  AppLocalizations.of(context)!.checkInCheckOut,
+                  AppLocalizations.of(context)!.checkInTime,
                 ),
                 _buildPolicyCard(
                   Icons.cancel_outlined,
-                  'Cancellation',
-                  'Free cancellation up to 48 hours before check-in',
+                  AppLocalizations.of(context)!.cancellation,
+                  AppLocalizations.of(context)!.cancellationPolicy,
                 ),
                 const SizedBox(height: 40),
                 _buildBookingCard(),
@@ -397,24 +398,24 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     final amenities = <Map<String, dynamic>>[];
 
     if (_room?.hasWifi == true) {
-      amenities.add({'icon': Icons.wifi, 'label': 'Free WiFi'});
+      amenities.add({'icon': Icons.wifi, 'label': AppLocalizations.of(context)!.freeWiFi});
     }
     if (_room?.hasTv == true) {
-      amenities.add({'icon': Icons.tv, 'label': 'Smart TV'});
+      amenities.add({'icon': Icons.tv, 'label': AppLocalizations.of(context)!.smartTV});
     }
     if (_room?.hasAc == true) {
-      amenities.add({'icon': Icons.ac_unit, 'label': 'Air Conditioning'});
+      amenities.add({'icon': Icons.ac_unit, 'label': AppLocalizations.of(context)!.airConditioning});
     }
     if (_room?.hasBreakfast == true) {
-      amenities.add({'icon': Icons.restaurant, 'label': 'Breakfast'});
+      amenities.add({'icon': Icons.restaurant, 'label': AppLocalizations.of(context)!.breakfast});
     }
     if (_room?.hasParking == true) {
-      amenities.add({'icon': Icons.local_parking, 'label': 'Parking'});
+      amenities.add({'icon': Icons.local_parking, 'label': AppLocalizations.of(context)!.parking});
     }
 
     if (amenities.isEmpty) {
       return Text(
-        'Standard room amenities included',
+        AppLocalizations.of(context)!.standardAmenities,
         style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
       );
     }
@@ -607,7 +608,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 elevation: 0,
               ),
               child: Text(
-                'RESERVE NOW',
+                AppLocalizations.of(context)!.reserveNow,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -687,18 +688,18 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Select Guests",
+                    AppLocalizations.of(context)!.selectGuests,
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _buildCounterRow("Adults", tempAdults, (val) {
+                  _buildCounterRow(AppLocalizations.of(context)!.adults, tempAdults, (val) {
                     setModalState(() => tempAdults = val);
                   }),
                   const Divider(),
-                  _buildCounterRow("Children", tempChildren, (val) {
+                  _buildCounterRow(AppLocalizations.of(context)!.children, tempChildren, (val) {
                     setModalState(() => tempChildren = val);
                   }),
                   const SizedBox(height: 24),
@@ -721,7 +722,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                         ),
                       ),
                       child: Text(
-                        "Confirm Guests",
+                        AppLocalizations.of(context)!.confirmGuests,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -744,20 +745,20 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Price Breakdown',
+          AppLocalizations.of(context)!.priceBreakdown,
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildPriceRow('Room rate', '\$250.00'),
-            _buildPriceRow('Service fee', '\$25.00'),
-            _buildPriceRow('Taxes', '\$30.00'),
+            _buildPriceRow(AppLocalizations.of(context)!.roomRate, '\$250.00'),
+            _buildPriceRow(AppLocalizations.of(context)!.serviceFee, '\$25.00'),
+            _buildPriceRow(AppLocalizations.of(context)!.taxes, '\$30.00'),
             const Divider(height: 24),
-            _buildPriceRow('Total per night', '\$305.00', isBold: true),
+            _buildPriceRow(AppLocalizations.of(context)!.totalPerNight, '\$305.00', isBold: true),
             const SizedBox(height: 12),
             Text(
-              '* Final price may vary based on length of stay and booking dates',
+              AppLocalizations.of(context)!.priceNote,
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 color: Colors.grey[600],
@@ -770,7 +771,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'CLOSE',
+              AppLocalizations.of(context)!.close,
               style: GoogleFonts.poppins(
                 color: brandGold,
                 fontWeight: FontWeight.w600,

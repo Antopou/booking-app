@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:booking_app/models/payment_method_models.dart';
 import 'package:booking_app/services/payment_method_service.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
@@ -57,7 +58,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Payment Methods',
+          AppLocalizations.of(context)!.paymentMethods,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -76,7 +77,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Your Payment Methods',
+                AppLocalizations.of(context)!.yourPaymentMethods,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -107,7 +108,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       onPressed: _loadPaymentMethods,
                       icon: const Icon(Icons.refresh),
                       label: Text(
-                        'Retry',
+                        AppLocalizations.of(context)!.retry,
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -134,7 +135,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'No payment methods yet. Add one to speed up checkout.',
+                              AppLocalizations.of(context)!.noPaymentMethodsYet,
                               style: GoogleFonts.poppins(color: Colors.grey[700]),
                             ),
                           ),
@@ -158,7 +159,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   onPressed: _openAddPaymentSheet,
                   icon: const Icon(Icons.add),
                   label: Text(
-                    'ADD PAYMENT METHOD',
+                    AppLocalizations.of(context)!.addPaymentMethodButton,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -241,7 +242,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'Default',
+                          AppLocalizations.of(context)!.defaultLabel,
                           style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -254,8 +255,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 const SizedBox(height: 4),
                 Text(
                   card.cardLast4.isNotEmpty
-                      ? 'Ends with ${card.cardLast4}'
-                      : 'Tokenized method',
+                      ? AppLocalizations.of(context)!.endsWith(card.cardLast4)
+                      : AppLocalizations.of(context)!.tokenizedMethod,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.grey.shade600,
@@ -264,8 +265,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 const SizedBox(height: 4),
                 Text(
                   card.expYear > 0
-                      ? 'Expires ${card.expMonth.toString().padLeft(2, '0')}/${card.expYear}'
-                      : 'Active',
+                      ? AppLocalizations.of(context)!.expires(
+                          card.expMonth.toString().padLeft(2, '0'),
+                          card.expYear.toString(),
+                        )
+                      : AppLocalizations.of(context)!.active,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     color: Colors.grey.shade500,
@@ -290,7 +294,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     const Icon(Icons.check_circle_outline,
                         size: 18, color: Colors.green),
                     const SizedBox(width: 8),
-                    Text('Set as Default',
+                    Text(AppLocalizations.of(context)!.setAsDefaultMenu,
                         style: GoogleFonts.poppins(fontSize: 12)),
                   ],
                 ),
@@ -370,7 +374,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add Payment Method',
+                AppLocalizations.of(context)!.addPaymentMethod,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -381,7 +385,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedMethodType,
                 decoration: InputDecoration(
-                  labelText: 'Method Type',
+                  labelText: AppLocalizations.of(context)!.methodType,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -401,7 +405,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               TextField(
                 controller: _cardNumberController,
                 decoration: InputDecoration(
-                  labelText: 'Card Number',
+                  labelText: AppLocalizations.of(context)!.cardNumber,
                   hintText: '1234 5678 9012 3456',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -416,7 +420,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     child: TextField(
                       controller: _expMonthController,
                       decoration: InputDecoration(
-                        labelText: 'Exp. Month',
+                        labelText: AppLocalizations.of(context)!.expMonth,
                         hintText: '12',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -430,7 +434,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     child: TextField(
                       controller: _expYearController,
                       decoration: InputDecoration(
-                        labelText: 'Exp. Year',
+                        labelText: AppLocalizations.of(context)!.expYear,
                         hintText: '2030',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -445,7 +449,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               TextField(
                 controller: _billingNameController,
                 decoration: InputDecoration(
-                  labelText: 'Billing Name',
+                  labelText: AppLocalizations.of(context)!.billingName,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -455,7 +459,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               TextField(
                 controller: _brandController,
                 decoration: InputDecoration(
-                  labelText: 'Brand (e.g., Visa)',
+                  labelText: AppLocalizations.of(context)!.brand,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -465,7 +469,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               TextField(
                 controller: _tokenController,
                 decoration: InputDecoration(
-                  labelText: 'Token (if tokenized)',
+                  labelText: AppLocalizations.of(context)!.token,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -475,7 +479,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(
-                  'Set as default',
+                  AppLocalizations.of(context)!.setAsDefaultLabel,
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 ),
                 value: _setAsDefault,
@@ -492,7 +496,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: Text(
-                    'Save',
+                    AppLocalizations.of(context)!.save,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -537,7 +541,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Payment method added',
+            AppLocalizations.of(context)!.paymentMethodAdded,
             style: GoogleFonts.poppins(),
           ),
           backgroundColor: brandGold,
@@ -575,7 +579,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Default payment updated',
+          content: Text(AppLocalizations.of(context)!.defaultPaymentUpdated,
               style: GoogleFonts.poppins()),
           backgroundColor: brandGold,
         ),
@@ -600,7 +604,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Payment method deleted',
+          content: Text(AppLocalizations.of(context)!.paymentMethodDeleted,
               style: GoogleFonts.poppins()),
           backgroundColor: Colors.red,
         ),

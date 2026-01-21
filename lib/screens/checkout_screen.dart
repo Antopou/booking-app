@@ -7,6 +7,7 @@ import 'package:booking_app/services/user_service.dart';
 import 'package:booking_app/models/user_profile_models.dart';
 import 'package:booking_app/services/payment_method_service.dart';
 import 'package:booking_app/models/payment_method_models.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 import 'payment_methods_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -166,7 +167,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Checkout',
+          AppLocalizations.of(context)!.checkout,
           style: GoogleFonts.poppins(
             color: darkGrey,
             fontWeight: FontWeight.bold,
@@ -268,7 +269,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Guest Details',
+            AppLocalizations.of(context)!.guestDetails,
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -276,12 +277,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          _buildTextField('Full Name', _nameController, Icons.person_outline),
+          _buildTextField(AppLocalizations.of(context)!.fullName, _nameController, Icons.person_outline),
           const SizedBox(height: 16),
-          _buildTextField('Email', _emailController, Icons.email_outlined),
+          _buildTextField(AppLocalizations.of(context)!.emailAddress, _emailController, Icons.email_outlined),
           const SizedBox(height: 16),
           _buildTextField(
-            'Phone Number',
+            AppLocalizations.of(context)!.phoneNumber,
             _phoneController,
             Icons.phone_outlined,
           ),
@@ -339,7 +340,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Payment Method',
+            AppLocalizations.of(context)!.paymentMethod,
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -357,7 +358,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Saved Payment Methods',
+                  AppLocalizations.of(context)!.savedPaymentMethods,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -378,7 +379,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ],
             ),
           Text(
-            'Or Add New Payment Method',
+            AppLocalizations.of(context)!.orAddNewPaymentMethod,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -388,7 +389,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: 12),
 
           // Cards
-          _buildCategoryHeader('Cards', _cardsExpanded, () {
+          _buildCategoryHeader(AppLocalizations.of(context)!.cards, _cardsExpanded, () {
             setState(() => _cardsExpanded = !_cardsExpanded);
           }),
           AnimatedSize(
@@ -400,7 +401,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       const SizedBox(height: 10),
                       _buildPaymentOption(
                         'card',
-                        'Credit / Debit Card',
+                        AppLocalizations.of(context)!.creditDebitCard,
                         Icons.credit_card,
                       ),
                     ],
@@ -410,7 +411,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: 20),
 
           // Digital Wallets
-          _buildCategoryHeader('Digital Wallets', _digitalWalletsExpanded, () {
+          _buildCategoryHeader(AppLocalizations.of(context)!.digitalWallets, _digitalWalletsExpanded, () {
             setState(() => _digitalWalletsExpanded = !_digitalWalletsExpanded);
           }),
           AnimatedSize(
@@ -422,13 +423,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       const SizedBox(height: 10),
                       _buildPaymentOption(
                         'apple_pay',
-                        'Apple Pay',
+                        AppLocalizations.of(context)!.applePay,
                         Icons.apple,
                       ),
                       const SizedBox(height: 8),
                       _buildPaymentOption(
                         'google_pay',
-                        'Google Pay',
+                        AppLocalizations.of(context)!.googlePay,
                         Icons.g_mobiledata,
                       ),
                     ],
@@ -453,7 +454,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               },
               icon: const Icon(Icons.add),
               label: Text(
-                'MANAGE PAYMENT METHODS',
+                AppLocalizations.of(context)!.managePaymentMethods,
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
@@ -513,7 +514,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   if (method.cardLast4.isNotEmpty)
                     Text(
-                      'Ends with ${method.cardLast4}',
+                      AppLocalizations.of(context)!.endsWith(method.cardLast4),
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: Colors.grey[600],

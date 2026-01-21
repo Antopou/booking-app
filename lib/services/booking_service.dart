@@ -123,8 +123,8 @@ class BookingService {
 
       final body = {
         'checkinCode': checkinCode,
-        'checkInDate': checkInDate.toUtc().toIso8601String(),
-        'checkOutDate': checkOutDate.toUtc().toIso8601String(),
+        'checkInDate': '${checkInDate.year}-${checkInDate.month.toString().padLeft(2, '0')}-${checkInDate.day.toString().padLeft(2, '0')}',
+        'checkOutDate': '${checkOutDate.year}-${checkOutDate.month.toString().padLeft(2, '0')}-${checkOutDate.day.toString().padLeft(2, '0')}',
         'numberOfGuests': numberOfGuests,
         'adult': adult,
         'child': child,

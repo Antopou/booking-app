@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:booking_app/screens/room_details_screen.dart';
 import 'package:booking_app/config/api_config.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -33,7 +34,12 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
   late Animation<Offset> _slideUp;
 
   String _sortBy = 'Recommended';
-  final List<String> _sortOptions = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Rating'];
+  List<String> get _sortOptions => [
+    AppLocalizations.of(context)!.recommended,
+    AppLocalizations.of(context)!.priceLowToHigh,
+    AppLocalizations.of(context)!.priceHighToLow,
+    AppLocalizations.of(context)!.rating,
+  ];
 
   List<Map<String, dynamic>> _availableRooms = [];
   bool _isLoading = true;
@@ -141,20 +147,16 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
 
   List<Map<String, dynamic>> get _sortedRooms {
     final rooms = List<Map<String, dynamic>>.from(_availableRooms);
-    switch (_sortBy) {
-      case 'Price: Low to High':
-        rooms.sort((a, b) => a['price'].compareTo(b['price']));
-        break;
-      case 'Price: High to Low':
-        rooms.sort((a, b) => b['price'].compareTo(a['price']));
-        break;
-      case 'Rating':
-        rooms.sort((a, b) => b['rating'].compareTo(a['rating']));
-        break;
-      default:
-        // Recommended - keep original order
-        break;
+    final localizations = AppLocalizations.of(context)!;
+    
+    if (_sortBy == localizations.priceLowToHigh) {
+      rooms.sort((a, b) => a['price'].compareTo(b['price']));
+    } else if (_sortBy == localizations.priceHighToLow) {
+      rooms.sort((a, b) => b['price'].compareTo(a['price']));
+    } else if (_sortBy == localizations.rating) {
+      rooms.sort((a, b) => b['rating'].compareTo(a['rating']));
     }
+    // else Recommended - keep original order
     return rooms;
   }
 
@@ -170,7 +172,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
           icon: const Icon(Icons.arrow_back, color: darkGrey),
         ),
         title: Text(
-          'Available Rooms',
+          AppLocalizations.of(context)!.availableRooms,
           style: GoogleFonts.poppins(
             color: darkGrey,
             fontWeight: FontWeight.bold,
@@ -193,7 +195,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
                     _buildSearchSummary(),
                     Expanded(
                       child: _sortedRooms.isEmpty
-                          ? const Center(child: Text('No rooms available.'))
+                          ? Center(child: Text(AppLocalizations.of(context)!.noRoomsAvailable))
                           : FadeTransition(
                               opacity: _fadeIn,
                               child: SlideTransition(
@@ -238,7 +240,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Check-in',
+                      AppLocalizations.of(context)!.checkIn,
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey.shade600,
@@ -265,7 +267,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '$_totalNights nights',
+                  AppLocalizations.of(context)!.nightsLabel(_totalNights),
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -279,7 +281,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'Check-out',
+                      AppLocalizations.of(context)!.checkOut,
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey.shade600,
@@ -309,7 +311,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
               Icon(Icons.people_outline, size: 18, color: Colors.grey.shade600),
               const SizedBox(width: 8),
               Text(
-                '${widget.adults} Adults, ${widget.children} Children',
+                AppLocalizations.of(context)!.adultsChildren(widget.adults, widget.children),
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade700,
@@ -318,7 +320,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
               ),
               const Spacer(),
               Text(
-                '${_sortedRooms.length} rooms available',
+                AppLocalizations.of(context)!.roomsAvailableCount(_sortedRooms.length),
                 style: const TextStyle(
                   fontSize: 14,
                   color: brandGold,
@@ -514,7 +516,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '\$${room['price']} / night',
+                              '\$${room['price']} ${AppLocalizations.of(context)!.perNight}',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -522,7 +524,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '\$$totalPrice total',
+                              '\$$totalPrice ${AppLocalizations.of(context)!.totalPrice}',
                               style: GoogleFonts.poppins(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -550,9 +552,9 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
                           ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          'Book Now',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.bookNow,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -631,7 +633,7 @@ class SearchResultsScreenState extends State<SearchResultsScreen> with SingleTic
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Sort By',
+                AppLocalizations.of(context)!.sortBy,
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

@@ -9,6 +9,7 @@ import 'package:booking_app/screens/search_results_screen.dart';
 // Models and Services
 import 'package:booking_app/models/room_model.dart';
 import 'package:booking_app/services/room_service.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 
 class RoomListingScreen extends StatefulWidget {
   const RoomListingScreen({super.key});
@@ -171,14 +172,14 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text("Select Guests", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(AppLocalizations.of(context)!.selectGuests, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
-                  _buildCounterRow("Adults", _adults, (val) {
+                  _buildCounterRow(AppLocalizations.of(context)!.adults, _adults, (val) {
                     setModalState(() => _adults = val);
                     setState(() {});
                   }),
                   const Divider(),
-                  _buildCounterRow("Children", _children, (val) {
+                  _buildCounterRow(AppLocalizations.of(context)!.children, _children, (val) {
                     setModalState(() => _children = val);
                     setState(() {});
                   }),
@@ -192,7 +193,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
                         backgroundColor: darkGrey,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text("Confirm Guests", style: TextStyle(color: Colors.white)),
+                      child: Text(AppLocalizations.of(context)!.confirmGuests, style: const TextStyle(color: Colors.white)),
                     ),
                   )
                 ],
@@ -307,14 +308,14 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
             child: Column(
               children: [
                 Text(
-                  'Luxury Awaits You',
+                  AppLocalizations.of(context)!.luxuryAwaitsYou,
                   style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Experience world-class hospitality in\nbeautifully designed rooms',
+                Text(
+                  AppLocalizations.of(context)!.hospitalityDescription,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
+                  style: const TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
                 ),
               ],
             ),
@@ -398,9 +399,9 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
                         borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
-                        "Search Availability",
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.searchAvailability,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -441,10 +442,10 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
 
   Widget _buildFeaturesGrid() {
     final features = [
-      {'icon': Icons.shield_outlined, 'title': 'Secure Booking'},
-      {'icon': Icons.workspace_premium_outlined, 'title': 'Best Prices'},
-      {'icon': Icons.headset_mic_outlined, 'title': '24/7 Support'},
-      {'icon': Icons.auto_awesome_outlined, 'title': 'Premium Quality'},
+      {'icon': Icons.shield_outlined, 'title': AppLocalizations.of(context)!.secureBooking},
+      {'icon': Icons.workspace_premium_outlined, 'title': AppLocalizations.of(context)!.bestPrices},
+      {'icon': Icons.headset_mic_outlined, 'title': AppLocalizations.of(context)!.support24},
+      {'icon': Icons.auto_awesome_outlined, 'title': AppLocalizations.of(context)!.premiumQuality},
     ];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -464,7 +465,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
     );
   }
 
-  Widget _buildRoomSectionHeader() => Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), child: Text("Featured Accommodations", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold)));
+  Widget _buildRoomSectionHeader() => Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), child: Text(AppLocalizations.of(context)!.featuredAccommodations, style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold)));
 
   Widget _buildFilters() {
     return SingleChildScrollView(
@@ -524,7 +525,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
             Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
             const SizedBox(height: 16),
             Text(
-              'Error loading rooms',
+              AppLocalizations.of(context)!.errorLoadingRooms,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -549,7 +550,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+              child: Text(AppLocalizations.of(context)!.retry, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -583,7 +584,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
                   Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
                   const SizedBox(height: 16),
                   Text(
-                    'No rooms found',
+                    AppLocalizations.of(context)!.noRoomsFound,
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -592,7 +593,7 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Try selecting a different category',
+                    AppLocalizations.of(context)!.tryDifferentCategory,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.grey.shade500,
@@ -723,7 +724,7 @@ class _HoverableRoomCardState extends State<_HoverableRoomCard> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           child: Text(
-                            "Book Now",
+                            AppLocalizations.of(context)!.bookNow,
                             style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,

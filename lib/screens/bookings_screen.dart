@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:booking_app/services/booking_service.dart';
 import 'package:booking_app/services/auth_service.dart';
 import 'package:booking_app/models/booking_models.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 import 'login_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -104,7 +105,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'LuxeStay Reservations',
+          AppLocalizations.of(context)!.luxeStayReservations,
           style: GoogleFonts.poppins(
             color: darkGrey,
             fontWeight: FontWeight.w600,
@@ -133,7 +134,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Loading your bookings...',
+            AppLocalizations.of(context)!.loadingBookings,
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -220,7 +221,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
             // --- HEADER SECTION ---
             const SizedBox(height: 15),
             Text(
-              'My Stays',
+              AppLocalizations.of(context)!.myStays,
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -277,9 +278,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
             ),
             child: Row(
               children: [
-                _buildTab('Upcoming', 0),
-                _buildTab('Past', 1),
-                _buildTab('Cancelled', 2),
+                _buildTab(AppLocalizations.of(context)!.upcomingBookings, 0),
+                _buildTab(AppLocalizations.of(context)!.pastBookings, 1),
+                _buildTab(AppLocalizations.of(context)!.cancelledBookings, 2),
               ],
             ),
           ),
@@ -556,7 +557,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                         ),
                       ),
                       child: Text(
-                        'MANAGE',
+                        AppLocalizations.of(context)!.manage,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
@@ -762,7 +763,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Manage Booking',
+                  AppLocalizations.of(context)!.manageBooking,
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -789,7 +790,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
                   // Quick Actions
                   Text(
-                    'Quick Actions',
+                    AppLocalizations.of(context)!.quickActions,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -800,8 +801,8 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
                   _buildActionButton(
                     icon: Icons.edit_calendar_outlined,
-                    title: 'Modify Dates',
-                    subtitle: 'Change check-in or check-out dates',
+                    title: AppLocalizations.of(context)!.modifyDates,
+                    subtitle: AppLocalizations.of(context)!.changeCheckInOut,
                     color: brandGold,
                     onTap: () => _showModifyDatesDialog(context, booking),
                   ),
@@ -809,8 +810,8 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
                   _buildActionButton(
                     icon: Icons.group_outlined,
-                    title: 'Update Guests',
-                    subtitle: 'Change number of guests',
+                    title: AppLocalizations.of(context)!.updateGuests,
+                    subtitle: AppLocalizations.of(context)!.changeNumberOfGuests,
                     color: Colors.blue,
                     onTap: () => _showUpdateGuestsDialog(context, booking),
                   ),
@@ -818,7 +819,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
                   _buildActionButton(
                     icon: Icons.receipt_long_outlined,
-                    title: 'View Confirmation',
+                    title: AppLocalizations.of(context)!.viewConfirmation,
                     subtitle: 'Booking ID: #BK-2025-0142',
                     color: Colors.green,
                     onTap: () => _showConfirmationDialog(context),
@@ -827,8 +828,8 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
                   _buildActionButton(
                     icon: Icons.support_agent_outlined,
-                    title: 'Contact Support',
-                    subtitle: 'Get help with your booking',
+                    title: AppLocalizations.of(context)!.contactSupport,
+                    subtitle: AppLocalizations.of(context)!.getHelpWithBooking,
                     color: Colors.purple,
                     onTap: () => _showContactSupportDialog(context),
                   ),
@@ -836,7 +837,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
                   // Danger Zone
                   Text(
-                    'Cancellation',
+                    AppLocalizations.of(context)!.cancellation,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -847,8 +848,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
                   _buildActionButton(
                     icon: Icons.cancel_outlined,
-                    title: 'Cancel Booking',
-                    subtitle: 'Free cancellation until 26 Dec 2025',
+                    title: AppLocalizations.of(context)!.cancelBooking,
+                    subtitle: AppLocalizations.of(context)!.freeCancellationUntil(
+                      _formatDate(booking.checkInDate.subtract(const Duration(days: 2))),
+                    ),
                     color: Colors.red,
                     onTap: () => _showCancelBookingDialog(context, booking),
                   ),
@@ -1246,8 +1249,18 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     child: children,
                   );
                   if (context.mounted) {
-                    Navigator.pop(context);
+                    Navigator.pop(context); // Close the modify dates dialog
                     await _fetchBookings();
+                    
+                    // Find the updated booking and reopen the sheet
+                    final updatedBooking = _allBookings.firstWhere(
+                      (b) => b.checkinCode == booking.checkinCode,
+                      orElse: () => booking,
+                    );
+                    
+                    Navigator.pop(context); // Close the old manage booking sheet
+                    _showManageBookingSheet(context, updatedBooking); // Open with updated data
+                    
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -1322,18 +1335,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
     BuildContext context,
     BookingListItem booking,
   ) async {
-    // Prefill from API
-    int adults = 2;
-    int children = 1;
-    try {
-      final details = await _bookingService.fetchBookingByCheckinCode(
-        booking.checkinCode,
-      );
-      adults = details.data.adult;
-      children = details.data.child;
-    } catch (_) {
-      // fallback to defaults if API fails
-    }
+    // Fetch current guest info from booking object
+    int adults = booking.adult > 0 ? booking.adult : 1;
+    int children = booking.child > 0 ? booking.child : 0;
 
     showDialog(
       context: context,
@@ -1432,35 +1436,6 @@ class _BookingsScreenState extends State<BookingsScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.pop(context);
-
-                // Show loading indicator
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          'Updating guest count...',
-                          style: GoogleFonts.poppins(),
-                        ),
-                      ],
-                    ),
-                    duration: const Duration(seconds: 30),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-
                 try {
                   // Call the API to update the booking
                   await _bookingService.updateBooking(
@@ -1472,17 +1447,28 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     child: children,
                   );
 
+                  if (!mounted) return;
+
+                  // Close the update guests dialog
+                  Navigator.pop(context);
+
                   // Refresh bookings list
                   await _fetchBookings();
 
-                  if (!mounted) return;
+                  // Find the updated booking and reopen the sheet
+                  final updatedBooking = _allBookings.firstWhere(
+                    (b) => b.checkinCode == booking.checkinCode,
+                    orElse: () => booking,
+                  );
+                  
+                  Navigator.pop(context); // Close the old manage booking sheet
+                  _showManageBookingSheet(context, updatedBooking); // Open with updated data
 
-                  // Hide loading and show success
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  // Show success
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Update success',
+                        'Guests updated successfully!',
                         style: GoogleFonts.poppins(),
                       ),
                       backgroundColor: Colors.green,

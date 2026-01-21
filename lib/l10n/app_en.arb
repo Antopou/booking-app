@@ -1,0 +1,294 @@
+{
+  "@@locale": "en",
+  "appTitle": "LuxeStay",
+  "home": "Home",
+  "bookings": "Bookings",
+  "profile": "Profile",
+  "myStays": "My Stays",
+  "upcomingBookings": "Upcoming",
+  "pastBookings": "Past",
+  "cancelledBookings": "Cancelled",
+  "luxeStayReservations": "LuxeStay Reservations",
+  "luxeStayMember": "LuxeStay Member",
+  "manageBooking": "Manage Booking",
+  "quickActions": "Quick Actions",
+  "modifyDates": "Modify Dates",
+  "changeCheckInOut": "Change check-in or check-out dates",
+  "updateGuests": "Update Guests",
+  "changeNumberOfGuests": "Change number of guests",
+  "viewConfirmation": "View Confirmation",
+  "bookingId": "Booking ID",
+  "contactSupport": "Contact Support",
+  "getHelpWithBooking": "Get help with your booking",
+  "cancellation": "Cancellation",
+  "selectNewCheckInOut": "Select new check-in and check-out dates",
+  "checkIn": "CHECK-IN",
+  "checkOut": "CHECK-OUT",
+  "nights": "night(s)",
+  "estimated": "Estimated",
+  "cancel": "CANCEL",
+  "saveChanges": "SAVE CHANGES",
+  "datesUpdatedSuccessfully": "Dates updated successfully! New check-in: {date}",
+  "@datesUpdatedSuccessfully": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "failedUpdateDates": "Failed to update dates: {error}",
+  "@failedUpdateDates": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "adults": "Adults",
+  "ages13OrAbove": "Ages 13 or above",
+  "children": "Children",
+  "ages0To12": "Ages 0-12",
+  "total": "Total",
+  "guests": "guest(s)",
+  "adjustNumberOfGuests": "Adjust the number of guests for your stay",
+  "guestsUpdatedSuccessfully": "Guests updated successfully!",
+  "failedUpdateGuests": "Failed to update: {error}",
+  "@failedUpdateGuests": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "language": "Language",
+  "currency": "Currency",
+  "saveSettings": "SAVE SETTINGS",
+  "settingsSaved": "Settings saved! Language: {language}, Currency: {currency}",
+  "@settingsSaved": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "personalInformation": "Personal Information",
+  "paymentMethods": "Payment Methods",
+  "rewardsPoints": "Rewards & Points",
+  "savedDestinations": "Saved Destinations",
+  "notifications": "Notifications",
+  "languageCurrency": "Language & Currency",
+  "signIn": "SIGN IN",
+  "welcome": "Welcome to LuxeStay",
+  "signInToAccess": "Sign in to access your account and manage your profile",
+  "loadingProfile": "Loading profile...",
+  "loadingBookings": "Loading your bookings...",
+  "usDollar": "US Dollar",
+  "japaneseYen": "Japanese Yen",
+  "rewardsAndPoints": "Rewards & Points",
+  "currentPoints": "Current Points",
+  "tierStatus": "Tier Status",
+  "standard": "Standard",
+  "nextTier": "Next Tier",
+  "points": "points",
+  "progressTo": "Progress to {tier}",
+  "@progressTo": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "recentActivity": "Recent Activity",
+  "noRecentActivity": "No recent activity",
+  "redeem100Points": "REDEEM 100 POINTS",
+  "insufficientPoints": "Insufficient points to redeem",
+  "successfullyRedeemed": "Successfully redeemed 100 points!",
+  "failedRedeem": "Failed to redeem: {error}",
+  "@failedRedeem": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingRewards": "Error loading rewards",
+  "unknownError": "Unknown error",
+  "retry": "RETRY",
+  "membershipAccount": "MEMBERSHIP & ACCOUNT",
+  "preferences": "PREFERENCES",
+  "signOut": "SIGN OUT",
+  "version": "Version 1.0.0",
+  "luxeStayMemberTitle": "LuxeStay Member",
+  "member": "Member",
+  "checkInCheckOut": "Check-in/out",
+  "checkInTime": "Check-in: 3:00 PM • Check-out: 11:00 AM",
+  "cancellationPolicy": "Free cancellation up to 48 hours before check-in",
+  "aboutThisRoom": "About This Room",
+  "roomAmenities": "Room Amenities",
+  "policiesInformation": "Policies & Information",
+  "standardAmenities": "Standard room amenities included",
+  "freeWiFi": "Free WiFi",
+  "smartTV": "Smart TV",
+  "airConditioning": "Air Conditioning",
+  "breakfast": "Breakfast",
+  "parking": "Parking",
+  "avgPerNight": "avg / night",
+  "reserveNow": "RESERVE NOW",
+  "priceBreakdown": "Price Breakdown",
+  "roomRate": "Room rate",
+  "serviceFee": "Service fee",
+  "taxes": "Taxes",
+  "totalPerNight": "Total per night",
+  "priceNote": "* Final price may vary based on length of stay and booking dates",
+  "close": "CLOSE",
+  "selectGuests": "Select Guests",
+  "confirmGuests": "Confirm Guests",
+  "luxuryAwaitsYou": "Luxury Awaits You",
+  "hospitalityDescription": "Experience world-class hospitality in beautifully designed rooms",
+  "secureBooking": "Secure Booking",
+  "bestPrices": "Best Prices",
+  "support24": "24/7 Support",
+  "premiumQuality": "Premium Quality",
+  "featuredAccommodations": "Featured Accommodations",
+  "errorLoadingRooms": "Error loading rooms",
+  "noRoomsFound": "No rooms found",
+  "tryDifferentCategory": "Try selecting a different category",
+  "errorLoadingRoom": "Error loading room",
+  "roomNotFound": "Room not found",
+  "searchAvailability": "Search Availability",
+  "bookNow": "Book Now",
+  "cancelBooking": "Cancel Booking",
+  "freeCancellationUntil": "Free cancellation until {date}",
+  "@freeCancellationUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "checkout": "Checkout",
+  "guestDetails": "Guest Details",
+  "fullName": "Full Name",
+  "phoneNumber": "Phone Number",
+  "paymentMethod": "Payment Method",
+  "savedPaymentMethods": "Saved Payment Methods",
+  "orAddNewPaymentMethod": "Or Add New Payment Method",
+  "cards": "Cards",
+  "creditDebitCard": "Credit / Debit Card",
+  "digitalWallets": "Digital Wallets",
+  "applePay": "Apple Pay",
+  "googlePay": "Google Pay",
+  "managePaymentMethods": "MANAGE PAYMENT METHODS",
+  "endsWith": "Ends with {last4}",
+  "@endsWith": {
+    "placeholders": {
+      "last4": {
+        "type": "String"
+      }
+    }
+  },
+  "priceSummary": "Price Summary",
+  "subTotal": "Subtotal",
+  "confirmBooking": "CONFIRM BOOKING",
+  "bookingConfirmed": "Booking confirmed successfully!",
+  "failedBooking": "Failed to complete booking: {error}",
+  "@failedBooking": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "yourPaymentMethods": "Your Payment Methods",
+  "noPaymentMethodsYet": "No payment methods yet. Add one to speed up checkout.",
+  "addPaymentMethod": "Add Payment Method",
+  "methodType": "Method Type",
+  "cardNumber": "Card Number",
+  "expMonth": "Exp. Month",
+  "expYear": "Exp. Year",
+  "billingName": "Billing Name",
+  "brand": "Brand (e.g., Visa)",
+  "token": "Token (if tokenized)",
+  "setAsDefaultLabel": "Set as default",
+  "save": "Save",
+  "paymentMethodAdded": "Payment method added",
+  "billingNameRequired": "Billing name is required",
+  "defaultPaymentUpdated": "Default payment updated",
+  "paymentMethodDeleted": "Payment method deleted",
+  "setAsDefaultMenu": "Set as Default",
+  "delete": "Delete",
+  "addPaymentMethodButton": "ADD PAYMENT METHOD",
+  "personalInformationTitle": "Personal Information",
+  "edit": "Edit",
+  "done": "Done",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "emailAddress": "Email Address",
+  "dateOfBirth": "Date of Birth",
+  "fillAllRequiredFields": "Please fill in all required fields",
+  "personalInfoUpdatedSuccessfully": "Personal information updated successfully",
+  "errorUpdatingProfile": "Error updating profile: {error}",
+  "@errorUpdatingProfile": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "manage": "MANAGE",
+  "tokenizedMethod": "Tokenized method",
+  "expires": "Expires {expMonth}/{expYear}",
+  "@expires": {
+    "placeholders": {
+      "expMonth": {
+        "type": "String"
+      },
+      "expYear": {
+        "type": "String"
+      }
+    }
+  },
+  "active": "Active",
+  "defaultLabel": "Default",
+  "availableRooms": "Available Rooms",
+  "noRoomsAvailable": "No rooms available.",
+  "checkIn": "Check-in",
+  "checkOut": "Check-out",
+  "nightsLabel": "{count} nights",
+  "@nightsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adultsChildren": "{adults} Adults, {children} Children",
+  "@adultsChildren": {
+    "placeholders": {
+      "adults": {
+        "type": "int"
+      },
+      "children": {
+        "type": "int"
+      }
+    }
+  },
+  "roomsAvailableCount": "{count} rooms available",
+  "@roomsAvailableCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perNight": "/ night",
+  "totalPrice": "total",
+  "sortBy": "Sort By",
+  "recommended": "Recommended",
+  "priceLowToHigh": "Price: Low to High",
+  "priceHighToLow": "Price: High to Low",
+  "rating": "Rating"
+}

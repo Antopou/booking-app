@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:booking_app/services/preferences_service.dart';
+import 'package:booking_app/services/localization_provider.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class LanguageCurrencyScreen extends StatefulWidget {
   const LanguageCurrencyScreen({super.key});
@@ -13,30 +17,38 @@ class _LanguageCurrencyScreenState extends State<LanguageCurrencyScreen> {
   static const Color brandGold = Color(0xFFC5A368);
   static const Color darkGrey = Color(0xFF1A1A1A);
 
-  String selectedLanguage = 'English (US)';
-  String selectedCurrency = 'USD';
+  late String selectedLanguage;
+  late String selectedCurrency;
+  bool _isLoading = true;
+
+  final PreferencesService _preferencesService = PreferencesService();
 
   final List<String> languages = [
     'English (US)',
-    'English (UK)',
-    'Spanish (ES)',
-    'French',
-    'German',
     'Japanese',
-    'Chinese (Simplified)',
-    'Portuguese (BR)',
   ];
 
   final List<Map<String, String>> currencies = [
     {'code': 'USD', 'name': 'US Dollar', 'symbol': '\$'},
-    {'code': 'EUR', 'name': 'Euro', 'symbol': '€'},
-    {'code': 'GBP', 'name': 'British Pound', 'symbol': '£'},
     {'code': 'JPY', 'name': 'Japanese Yen', 'symbol': '¥'},
-    {'code': 'AUD', 'name': 'Australian Dollar', 'symbol': 'A\$'},
-    {'code': 'CAD', 'name': 'Canadian Dollar', 'symbol': 'C\$'},
-    {'code': 'CHF', 'name': 'Swiss Franc', 'symbol': 'CHF'},
-    {'code': 'CNY', 'name': 'Chinese Yuan', 'symbol': '¥'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final language = await _preferencesService.getLanguage();
+    final currency = await _preferencesService.getCurrency();
+    
+    setState(() {
+      selectedLanguage = language;
+      selectedCurrency = currency;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +62,7 @@ class _LanguageCurrencyScreenState extends State<LanguageCurrencyScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Language & Currency',
+          AppLocalizations.of(context)!.languageCurrency,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -59,14 +71,18 @@ class _LanguageCurrencyScreenState extends State<LanguageCurrencyScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Language Section
             Text(
-              'Language',
+              AppLocalizations.of(context)!.language,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -98,9 +114,13 @@ class _LanguageCurrencyScreenState extends State<LanguageCurrencyScreen> {
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
-                  setState(() {
-                    selectedLanguage = newValue ?? 'English (US)';
-                  });
+                  if (newValue != null) {
+                    setState(() {
+                      selectedLanguage = newValue;
+                    });
+                    // Update the app locale
+                    context.read<LocalizationProvider>().setLocale(newValue);
+                  }
                 },
               ),
             ),
@@ -109,7 +129,7 @@ class _LanguageCurrencyScreenState extends State<LanguageCurrencyScreen> {
 
             // Currency Section
             Text(
-              'Currency',
+              AppLocalizations.of(context)!.currency,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -131,17 +151,24 @@ class _LanguageCurrencyScreenState extends State<LanguageCurrencyScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Language set to $selectedLanguage, Currency set to $selectedCurrency',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                onPressed: () async {
+                  await _preferencesService.savePreferences(
+                    selectedLanguage,
+                    selectedCurrency,
                   );
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          AppLocalizations.of(context)!.settingsSaved(selectedLanguage, selectedCurrency),
+                          style: GoogleFonts.poppins(),
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: brandGold,
@@ -152,7 +179,7 @@ class _LanguageCurrencyScreenState extends State<LanguageCurrencyScreen> {
                   ),
                 ),
                 child: Text(
-                  'SAVE SETTINGS',
+                  AppLocalizations.of(context)!.saveSettings,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 import 'room_listing_screen.dart';
 import 'bookings_screen.dart';
 import 'profile_screen.dart';
@@ -68,21 +69,21 @@ class _HomeScreenState extends State<HomeScreen> {
             fontWeight: FontWeight.w500,
           ),
           elevation: 0,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined, size: 24),
-              activeIcon: Icon(Icons.home, size: 24),
-              label: 'Home',
+              icon: const Icon(Icons.home_outlined, size: 24),
+              activeIcon: const Icon(Icons.home, size: 24),
+              label: AppLocalizations.of(context)!.home,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_outlined, size: 24),
-              activeIcon: Icon(Icons.calendar_today, size: 24),
-              label: 'Bookings',
+              icon: const Icon(Icons.calendar_today_outlined, size: 24),
+              activeIcon: const Icon(Icons.calendar_today, size: 24),
+              label: AppLocalizations.of(context)!.bookings,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline, size: 24),
-              activeIcon: Icon(Icons.person, size: 24),
-              label: 'Profile',
+              icon: const Icon(Icons.person_outline, size: 24),
+              activeIcon: const Icon(Icons.person, size: 24),
+              label: AppLocalizations.of(context)!.profile,
             ),
           ],
         ),

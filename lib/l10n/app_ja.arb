@@ -1,0 +1,294 @@
+{
+  "@@locale": "ja",
+  "appTitle": "ラックスステイ",
+  "home": "ホーム",
+  "bookings": "予約",
+  "profile": "プロフィール",
+  "myStays": "私の滞在",
+  "upcomingBookings": "今後",
+  "pastBookings": "過去",
+  "cancelledBookings": "キャンセル済み",
+  "luxeStayReservations": "ラックスステイ予約",
+  "luxeStayMember": "ラックスステイメンバー",
+  "manageBooking": "予約を管理",
+  "quickActions": "クイックアクション",
+  "modifyDates": "日付を変更",
+  "changeCheckInOut": "チェックイン日またはチェックアウト日を変更",
+  "updateGuests": "ゲストを更新",
+  "changeNumberOfGuests": "ゲスト数を変更",
+  "viewConfirmation": "確認を表示",
+  "bookingId": "予約ID",
+  "contactSupport": "サポートに連絡",
+  "getHelpWithBooking": "予約についてヘルプを取得",
+  "cancellation": "キャンセル",
+  "selectNewCheckInOut": "新しいチェックイン日とチェックアウト日を選択してください",
+  "checkIn": "チェックイン",
+  "checkOut": "チェックアウト",
+  "nights": "泊",
+  "estimated": "推定",
+  "cancel": "キャンセル",
+  "saveChanges": "変更を保存",
+  "datesUpdatedSuccessfully": "日付が正常に更新されました！新しいチェックイン日：{date}",
+  "@datesUpdatedSuccessfully": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "failedUpdateDates": "日付の更新に失敗しました：{error}",
+  "@failedUpdateDates": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "adults": "大人",
+  "ages13OrAbove": "13歳以上",
+  "children": "子供",
+  "ages0To12": "0〜12歳",
+  "total": "合計",
+  "guests": "ゲスト",
+  "adjustNumberOfGuests": "滞在中のゲスト数を調整してください",
+  "guestsUpdatedSuccessfully": "ゲストが正常に更新されました！",
+  "failedUpdateGuests": "更新に失敗しました：{error}",
+  "@failedUpdateGuests": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "language": "言語",
+  "currency": "通貨",
+  "saveSettings": "設定を保存",
+  "settingsSaved": "設定が保存されました！言語：{language}、通貨：{currency}",
+  "@settingsSaved": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "personalInformation": "個人情報",
+  "paymentMethods": "支払い方法",
+  "rewardsPoints": "リワード＆ポイント",
+  "savedDestinations": "保存済みの目的地",
+  "notifications": "通知",
+  "languageCurrency": "言語と通貨",
+  "signIn": "サインイン",
+  "welcome": "ラックスステイへようこそ",
+  "signInToAccess": "サインインしてアカウントにアクセスしてプロフィールを管理してください",
+  "loadingProfile": "プロフィールを読み込み中...",
+  "loadingBookings": "予約を読み込み中...",
+  "usDollar": "米国ドル",
+  "japaneseYen": "日本円",
+  "rewardsAndPoints": "リワード＆ポイント",
+  "currentPoints": "現在のポイント",
+  "tierStatus": "ティアステータス",
+  "standard": "スタンダード",
+  "nextTier": "次のティア",
+  "points": "ポイント",
+  "progressTo": "{tier}への進行",
+  "@progressTo": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "recentActivity": "最近のアクティビティ",
+  "noRecentActivity": "最近のアクティビティがありません",
+  "redeem100Points": "100ポイントを使う",
+  "insufficientPoints": "ポイントが不足しています",
+  "successfullyRedeemed": "100ポイントが正常に使用されました！",
+  "failedRedeem": "使用に失敗しました：{error}",
+  "@failedRedeem": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingRewards": "リワードの読み込みエラー",
+  "unknownError": "不明なエラー",
+  "retry": "再試行",
+  "membershipAccount": "メンバーシップとアカウント",
+  "preferences": "設定",
+  "signOut": "サインアウト",
+  "version": "バージョン 1.0.0",
+  "luxeStayMemberTitle": "ラックスステイメンバー",
+  "member": "メンバー",
+  "checkInCheckOut": "チェックイン/チェックアウト",
+  "checkInTime": "チェックイン：午後3時、チェックアウト：午前11時",
+  "cancellationPolicy": "チェックイン48時間前までキャンセル無料",
+  "aboutThisRoom": "このお部屋について",
+  "roomAmenities": "客室アメニティ",
+  "policiesInformation": "ポリシーと情報",
+  "standardAmenities": "標準的な客室アメニティが含まれています",
+  "freeWiFi": "無料WiFi",
+  "smartTV": "スマートTV",
+  "airConditioning": "エアコン",
+  "breakfast": "朝食",
+  "parking": "駐車場",
+  "avgPerNight": "1泊当たりの平均",
+  "reserveNow": "今すぐ予約",
+  "priceBreakdown": "料金内訳",
+  "roomRate": "客室料金",
+  "serviceFee": "サービス料",
+  "taxes": "税金",
+  "totalPerNight": "1泊当たりの合計",
+  "priceNote": "※最終価格は滞在期間と予約日によって異なる場合があります",
+  "close": "閉じる",
+  "selectGuests": "ゲストを選択",
+  "confirmGuests": "ゲストを確認",
+  "luxuryAwaitsYou": "豪華さがあなたを待っています",
+  "hospitalityDescription": "美しくデザインされたお部屋で\n世界一流のおもてなしをご体験ください",
+  "secureBooking": "安全な予約",
+  "bestPrices": "最高の価格",
+  "support24": "24時間サポート",
+  "premiumQuality": "プレミアムクオリティ",
+  "featuredAccommodations": "注目の宿泊施設",
+  "errorLoadingRooms": "客室の読み込みエラー",
+  "noRoomsFound": "客室が見つかりません",
+  "tryDifferentCategory": "別のカテゴリーを選択してください",
+  "errorLoadingRoom": "客室の読み込みエラー",
+  "roomNotFound": "客室が見つかりません",
+  "searchAvailability": "空室状況を検索",
+  "bookNow": "今すぐ予約",
+  "cancelBooking": "予約をキャンセル",
+  "freeCancellationUntil": "{date}までキャンセル無料",
+  "@freeCancellationUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "checkout": "チェックアウト",
+  "guestDetails": "ゲスト詳細情報",
+  "fullName": "フルネーム",
+  "phoneNumber": "電話番号",
+  "paymentMethod": "支払い方法",
+  "savedPaymentMethods": "保存された支払い方法",
+  "orAddNewPaymentMethod": "または新しい支払い方法を追加",
+  "cards": "カード",
+  "creditDebitCard": "クレジット/デビットカード",
+  "digitalWallets": "デジタルウォレット",
+  "applePay": "Apple Pay",
+  "googlePay": "Google Pay",
+  "managePaymentMethods": "支払い方法を管理",
+  "endsWith": "{last4}で終わる",
+  "@endsWith": {
+    "placeholders": {
+      "last4": {
+        "type": "String"
+      }
+    }
+  },
+  "priceSummary": "料金サマリー",
+  "subTotal": "小計",
+  "confirmBooking": "予約を確認",
+  "bookingConfirmed": "予約が正常に確認されました！",
+  "failedBooking": "予約の完了に失敗しました：{error}",
+  "@failedBooking": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "yourPaymentMethods": "あなたの支払い方法",
+  "noPaymentMethodsYet": "支払い方法がまだあります。チェックアウトを高速化するために追加してください。",
+  "addPaymentMethod": "支払い方法を追加",
+  "methodType": "方法の種類",
+  "cardNumber": "カード番号",
+  "expMonth": "有効期限 月",
+  "expYear": "有効期限 年",
+  "billingName": "請求名",
+  "brand": "ブランド（例：Visa）",
+  "token": "トークン（トークン化されている場合）",
+  "setAsDefaultLabel": "デフォルトとして設定",
+  "save": "保存",
+  "paymentMethodAdded": "支払い方法が追加されました",
+  "billingNameRequired": "請求名は必須です",
+  "defaultPaymentUpdated": "デフォルト支払いが更新されました",
+  "paymentMethodDeleted": "支払い方法が削除されました",
+  "setAsDefaultMenu": "デフォルトに設定",
+  "delete": "削除",
+  "addPaymentMethodButton": "支払い方法を追加",
+  "personalInformationTitle": "個人情報",
+  "edit": "編集",
+  "done": "完了",
+  "firstName": "名前",
+  "lastName": "姓",
+  "emailAddress": "メールアドレス",
+  "dateOfBirth": "生年月日",
+  "fillAllRequiredFields": "すべての必須フィールドに入力してください",
+  "personalInfoUpdatedSuccessfully": "個人情報が正常に更新されました",
+  "errorUpdatingProfile": "プロフィール更新エラー：{error}",
+  "@errorUpdatingProfile": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "manage": "管理",
+  "tokenizedMethod": "トークン化された方法",
+  "expires": "{expMonth}/{expYear}に期限切れ",
+  "@expires": {
+    "placeholders": {
+      "expMonth": {
+        "type": "String"
+      },
+      "expYear": {
+        "type": "String"
+      }
+    }
+  },
+  "active": "有効",
+  "defaultLabel": "デフォルト",
+  "availableRooms": "空室情報",
+  "noRoomsAvailable": "空室がありません。",
+  "checkIn": "チェックイン",
+  "checkOut": "チェックアウト",
+  "nightsLabel": "{count}泊",
+  "@nightsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adultsChildren": "大人{adults}名、子供{children}名",
+  "@adultsChildren": {
+    "placeholders": {
+      "adults": {
+        "type": "int"
+      },
+      "children": {
+        "type": "int"
+      }
+    }
+  },
+  "roomsAvailableCount": "{count}室空室あり",
+  "@roomsAvailableCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perNight": "/ 泊",
+  "totalPrice": "合計",
+  "sortBy": "並べ替え",
+  "recommended": "おすすめ順",
+  "priceLowToHigh": "価格：安い順",
+  "priceHighToLow": "価格：高い順",
+  "rating": "評価順"
+}

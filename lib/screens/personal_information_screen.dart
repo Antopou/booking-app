@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:booking_app/models/user_profile_models.dart';
 import 'package:booking_app/services/user_service.dart';
+import 'package:booking_app/l10n/app_localizations.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
   final UserProfile? userProfile;
@@ -75,7 +76,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Please fill in all required fields',
+            AppLocalizations.of(context)!.fillAllRequiredFields,
             style: GoogleFonts.poppins(),
           ),
           backgroundColor: Colors.red,
@@ -111,7 +112,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Personal information updated successfully',
+            AppLocalizations.of(context)!.personalInfoUpdatedSuccessfully,
             style: GoogleFonts.poppins(),
           ),
           backgroundColor: Colors.green,
@@ -126,7 +127,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Error updating profile: ${e.toString()}',
+            AppLocalizations.of(context)!.errorUpdatingProfile(e.toString()),
             style: GoogleFonts.poppins(),
           ),
           backgroundColor: Colors.red,
@@ -148,7 +149,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Personal Information',
+          AppLocalizations.of(context)!.personalInformationTitle,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -163,7 +164,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               child: GestureDetector(
                 onTap: () => setState(() => _isEditing = !_isEditing),
                 child: Text(
-                  _isEditing ? 'Done' : 'Edit',
+                  _isEditing ? AppLocalizations.of(context)!.done : AppLocalizations.of(context)!.edit,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -188,26 +189,26 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInputField(
-                label: 'First Name',
+                label: AppLocalizations.of(context)!.firstName,
                 controller: _firstNameController,
                 enabled: _isEditing,
               ),
               const SizedBox(height: 20),
               _buildInputField(
-                label: 'Last Name',
+                label: AppLocalizations.of(context)!.lastName,
                 controller: _lastNameController,
                 enabled: _isEditing,
               ),
               const SizedBox(height: 20),
               _buildInputField(
-                label: 'Email Address',
+                label: AppLocalizations.of(context)!.emailAddress,
                 controller: _emailController,
                 enabled: _isEditing,
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 20),
             _buildInputField(
-              label: 'Phone Number',
+              label: AppLocalizations.of(context)!.phoneNumber,
               controller: _phoneController,
               enabled: _isEditing,
               keyboardType: TextInputType.phone,
@@ -242,7 +243,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               } : null,
               child: AbsorbPointer(
                 child: _buildInputField(
-                  label: 'Date of Birth',
+                  label: AppLocalizations.of(context)!.dateOfBirth,
                   controller: _birthdateController,
                   enabled: false,
                 ),
@@ -273,7 +274,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                           ),
                         )
                       : Text(
-                          'SAVE CHANGES',
+                          AppLocalizations.of(context)!.saveChanges,
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
