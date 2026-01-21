@@ -155,7 +155,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 notificationPreferences[title] = newValue;
               });
             },
-            activeColor: brandGold,
+            activeThumbColor: brandGold,
             activeTrackColor: brandGold.withOpacity(0.3),
           ),
         ],
