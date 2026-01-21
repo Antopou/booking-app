@@ -175,30 +175,37 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInputField(
-              label: 'First Name',
-              controller: _firstNameController,
-              enabled: _isEditing,
-            ),
-            const SizedBox(height: 20),
-            _buildInputField(
-              label: 'Last Name',
-              controller: _lastNameController,
-              enabled: _isEditing,
-            ),
-            const SizedBox(height: 20),
-            _buildInputField(
-              label: 'Email Address',
-              controller: _emailController,
-              enabled: _isEditing,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 20),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Simulate refresh
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        color: brandGold,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildInputField(
+                label: 'First Name',
+                controller: _firstNameController,
+                enabled: _isEditing,
+              ),
+              const SizedBox(height: 20),
+              _buildInputField(
+                label: 'Last Name',
+                controller: _lastNameController,
+                enabled: _isEditing,
+              ),
+              const SizedBox(height: 20),
+              _buildInputField(
+                label: 'Email Address',
+                controller: _emailController,
+                enabled: _isEditing,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 20),
             _buildInputField(
               label: 'Phone Number',
               controller: _phoneController,
@@ -276,6 +283,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               ),
           ],
         ),
+      ),
       ),
     );
   }

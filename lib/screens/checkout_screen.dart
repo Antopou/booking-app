@@ -3,6 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home_screen.dart';
 import 'package:booking_app/services/booking_service.dart';
 import 'package:booking_app/models/booking_models.dart';
+import 'package:booking_app/services/user_service.dart';
+import 'package:booking_app/models/user_profile_models.dart';
+import 'package:booking_app/services/payment_method_service.dart';
+import 'package:booking_app/models/payment_method_models.dart';
+import 'payment_methods_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final String roomName;
@@ -35,11 +40,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   static const Color darkGrey = Color(0xFF1A1A1A);
 
   String _selectedPaymentMethod = 'credit_card';
+  int? _selectedPaymentMethodId;
   bool _cardsExpanded = true;
-  bool _bankTransferExpanded = false;
-  bool _qrPaymentExpanded = false;
+  // bool _bankTransferExpanded = false;
+  // bool _qrPaymentExpanded = false;
   bool _digitalWalletsExpanded = false;
   bool _isLoading = false;
+  bool _loadingPaymentMethods = false;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -47,6 +54,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final TextEditingController _expiryController = TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
   final BookingService _bookingService = BookingService();
+  final UserService _userService = UserService();
+  final PaymentMethodService _paymentMethodService = PaymentMethodService();
+  
+  List<PaymentMethod> _savedPaymentMethods = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _prefillGuestDetails();
+    _loadSavedPaymentMethods();
+  }
 
   @override
   void dispose() {
@@ -57,6 +75,78 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _expiryController.dispose();
     _cvvController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSavedPaymentMethods() async {
+    setState(() => _loadingPaymentMethods = true);
+    try {
+      final methods = await _paymentMethodService.fetchPaymentMethods();
+      if (!mounted) return;
+      setState(() {
+        _savedPaymentMethods = methods;
+        // Auto-select default payment method if available
+        final defaultMethod = methods.firstWhere(
+          (m) => m.isDefault,
+          orElse: () => methods.isNotEmpty ? methods.first : PaymentMethod(
+            id: 0,
+            methodType: '',
+            brand: '',
+            cardLast4: '',
+            expMonth: 0,
+            expYear: 0,
+            isDefault: false,
+            billingName: '',
+          ),
+        );
+        if (defaultMethod.id != 0) {
+          _selectedPaymentMethodId = defaultMethod.id;
+          _selectedPaymentMethod = defaultMethod.methodType;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      // Silent fail - user can still add payment manually
+      debugPrint('Error loading payment methods: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _loadingPaymentMethods = false);
+      }
+    }
+  }
+
+  Future<void> _prefillGuestDetails() async {
+    try {
+      final UserProfileResponse profileResponse = await _userService
+          .getProfile();
+      final user = profileResponse.data;
+
+      final fullName = _composeName(user);
+
+      if (mounted) {
+        if (_nameController.text.isEmpty && fullName.isNotEmpty) {
+          _nameController.text = fullName;
+        }
+        if (_emailController.text.isEmpty && user.email.isNotEmpty) {
+          _emailController.text = user.email;
+        }
+        if (_phoneController.text.isEmpty &&
+            (user.phoneNumber ?? '').isNotEmpty) {
+          _phoneController.text = user.phoneNumber ?? '';
+        }
+      }
+    } catch (_) {
+      // Silent fail: keep fields empty if profile fetch fails or user not logged in
+    }
+  }
+
+  String _composeName(UserProfile user) {
+    final hasFirst = (user.firstName ?? '').trim().isNotEmpty;
+    final hasLast = (user.lastName ?? '').trim().isNotEmpty;
+
+    if (hasFirst && hasLast) return '${user.firstName} ${user.lastName}';
+    if (hasFirst) return user.firstName!.trim();
+    if (hasLast) return user.lastName!.trim();
+    return user.name.trim();
   }
 
   double get _roomTotal => widget.pricePerNight * widget.nights;
@@ -91,8 +181,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             _buildBookingSummary(),
             _buildGuestDetails(),
             _buildPaymentMethods(),
-            if (_selectedPaymentMethod == 'credit_card') _buildCardForm(),
-            if (_selectedPaymentMethod == 'khqr') _buildKHQRSection(),
             _buildPriceSummary(),
             _buildConfirmButton(),
             const SizedBox(height: 40),
@@ -259,6 +347,45 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          if (_loadingPaymentMethods)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
+            )
+          else if (_savedPaymentMethods.isNotEmpty)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Saved Payment Methods',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...List.generate(
+                  _savedPaymentMethods.length,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _buildSavedPaymentOption(_savedPaymentMethods[index]),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Divider(color: Colors.grey[200]),
+                const SizedBox(height: 20),
+              ],
+            ),
+          Text(
+            'Or Add New Payment Method',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 12),
 
           // Cards
           _buildCategoryHeader('Cards', _cardsExpanded, () {
@@ -272,62 +399,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     children: [
                       const SizedBox(height: 10),
                       _buildPaymentOption(
-                        'credit_card',
+                        'card',
                         'Credit / Debit Card',
                         Icons.credit_card,
                       ),
-                    ],
-                  )
-                : const SizedBox.shrink(),
-          ),
-          const SizedBox(height: 20),
-
-          // Bank Transfer
-          _buildCategoryHeader('Bank Transfer', _bankTransferExpanded, () {
-            setState(() => _bankTransferExpanded = !_bankTransferExpanded);
-          }),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            child: _bankTransferExpanded
-                ? Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      _buildPaymentOption(
-                        'aba',
-                        'ABA Bank',
-                        Icons.account_balance,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPaymentOption(
-                        'aceleda',
-                        'ACELEDA Bank',
-                        Icons.account_balance,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPaymentOption(
-                        'wing',
-                        'Wing Bank',
-                        Icons.account_balance,
-                      ),
-                    ],
-                  )
-                : const SizedBox.shrink(),
-          ),
-          const SizedBox(height: 20),
-
-          // QR Payment
-          _buildCategoryHeader('QR Payment', _qrPaymentExpanded, () {
-            setState(() => _qrPaymentExpanded = !_qrPaymentExpanded);
-          }),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            child: _qrPaymentExpanded
-                ? Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      _buildPaymentOption('khqr', 'KHQR', Icons.qr_code_2),
                     ],
                   )
                 : const SizedBox.shrink(),
@@ -360,10 +435,114 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   )
                 : const SizedBox.shrink(),
           ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final result = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaymentMethodsScreen(),
+                  ),
+                );
+                // Reload payment methods if user added one
+                if (result == true && mounted) {
+                  _loadSavedPaymentMethods();
+                }
+              },
+              icon: const Icon(Icons.add),
+              label: Text(
+                'MANAGE PAYMENT METHODS',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brandGold,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildSavedPaymentOption(PaymentMethod method) {
+    bool isSelected = _selectedPaymentMethodId == method.id;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _selectedPaymentMethodId = method.id;
+        _selectedPaymentMethod = method.methodType;
+      }),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected ? brandGold.withOpacity(0.1) : Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? brandGold : Colors.grey[200]!,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _iconForMethod(method.methodType),
+              color: isSelected ? brandGold : Colors.grey[600],
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    method.brand.isNotEmpty ? method.brand : method.methodType,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? darkGrey : Colors.grey[700],
+                    ),
+                  ),
+                  if (method.cardLast4.isNotEmpty)
+                    Text(
+                      'Ends with ${method.cardLast4}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: brandGold, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _iconForMethod(String methodType) {
+    switch (methodType.toLowerCase()) {
+      case 'card':
+        return Icons.credit_card;
+      case 'apple_pay':
+        return Icons.apple;
+      case 'google_pay':
+        return Icons.g_mobiledata;
+      default:
+        return Icons.payment;
+    }
+  }
+
 
   Widget _buildCategoryHeader(
     String label,
@@ -437,225 +616,225 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildCardForm() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Card Details',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: darkGrey,
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _cardNumberController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Card Number',
-              hintText: '1234 5678 9012 3456',
-              prefixIcon: const Icon(
-                Icons.credit_card,
-                color: brandGold,
-                size: 20,
-              ),
-              labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-              filled: true,
-              fillColor: Colors.grey[50],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[200]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: brandGold, width: 2),
-              ),
-            ),
-            style: GoogleFonts.poppins(),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _expiryController,
-                  keyboardType: TextInputType.datetime,
-                  decoration: InputDecoration(
-                    labelText: 'Expiry',
-                    hintText: 'MM/YY',
-                    prefixIcon: const Icon(
-                      Icons.calendar_today,
-                      color: brandGold,
-                      size: 18,
-                    ),
-                    labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[200]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: brandGold, width: 2),
-                    ),
-                  ),
-                  style: GoogleFonts.poppins(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextField(
-                  controller: _cvvController,
-                  keyboardType: TextInputType.number,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'CVV',
-                    hintText: '123',
-                    prefixIcon: const Icon(
-                      Icons.lock_outline,
-                      color: brandGold,
-                      size: 18,
-                    ),
-                    labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[200]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: brandGold, width: 2),
-                    ),
-                  ),
-                  style: GoogleFonts.poppins(),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildCardForm() {
+  //   return Container(
+  //     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //     padding: const EdgeInsets.all(20),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(20),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.05),
+  //           blurRadius: 10,
+  //           offset: const Offset(0, 2),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text(
+  //           'Card Details',
+  //           style: GoogleFonts.poppins(
+  //             fontSize: 16,
+  //             fontWeight: FontWeight.bold,
+  //             color: darkGrey,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 20),
+  //         TextField(
+  //           controller: _cardNumberController,
+  //           keyboardType: TextInputType.number,
+  //           decoration: InputDecoration(
+  //             labelText: 'Card Number',
+  //             hintText: '1234 5678 9012 3456',
+  //             prefixIcon: const Icon(
+  //               Icons.credit_card,
+  //               color: brandGold,
+  //               size: 20,
+  //             ),
+  //             labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
+  //             filled: true,
+  //             fillColor: Colors.grey[50],
+  //             border: OutlineInputBorder(
+  //               borderRadius: BorderRadius.circular(12),
+  //               borderSide: BorderSide.none,
+  //             ),
+  //             enabledBorder: OutlineInputBorder(
+  //               borderRadius: BorderRadius.circular(12),
+  //               borderSide: BorderSide(color: Colors.grey[200]!),
+  //             ),
+  //             focusedBorder: OutlineInputBorder(
+  //               borderRadius: BorderRadius.circular(12),
+  //               borderSide: const BorderSide(color: brandGold, width: 2),
+  //             ),
+  //           ),
+  //           style: GoogleFonts.poppins(),
+  //         ),
+  //         const SizedBox(height: 16),
+  //         Row(
+  //           children: [
+  //             Expanded(
+  //               child: TextField(
+  //                 controller: _expiryController,
+  //                 keyboardType: TextInputType.datetime,
+  //                 decoration: InputDecoration(
+  //                   labelText: 'Expiry',
+  //                   hintText: 'MM/YY',
+  //                   prefixIcon: const Icon(
+  //                     Icons.calendar_today,
+  //                     color: brandGold,
+  //                     size: 18,
+  //                   ),
+  //                   labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
+  //                   filled: true,
+  //                   fillColor: Colors.grey[50],
+  //                   border: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     borderSide: BorderSide.none,
+  //                   ),
+  //                   enabledBorder: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     borderSide: BorderSide(color: Colors.grey[200]!),
+  //                   ),
+  //                   focusedBorder: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     borderSide: const BorderSide(color: brandGold, width: 2),
+  //                   ),
+  //                 ),
+  //                 style: GoogleFonts.poppins(),
+  //               ),
+  //             ),
+  //             const SizedBox(width: 16),
+  //             Expanded(
+  //               child: TextField(
+  //                 controller: _cvvController,
+  //                 keyboardType: TextInputType.number,
+  //                 obscureText: true,
+  //                 decoration: InputDecoration(
+  //                   labelText: 'CVV',
+  //                   hintText: '123',
+  //                   prefixIcon: const Icon(
+  //                     Icons.lock_outline,
+  //                     color: brandGold,
+  //                     size: 18,
+  //                   ),
+  //                   labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
+  //                   filled: true,
+  //                   fillColor: Colors.grey[50],
+  //                   border: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     borderSide: BorderSide.none,
+  //                   ),
+  //                   enabledBorder: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     borderSide: BorderSide(color: Colors.grey[200]!),
+  //                   ),
+  //                   focusedBorder: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     borderSide: const BorderSide(color: brandGold, width: 2),
+  //                   ),
+  //                 ),
+  //                 style: GoogleFonts.poppins(),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildKHQRSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'Scan KHQR Code',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: darkGrey,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: brandGold, width: 2),
-            ),
-            child: Column(
-              children: [
-                // QR Code Image
-                Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.network(
-                    'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=KHQR:LuxeStay-Booking-${DateTime.now().millisecondsSinceEpoch}',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Total: \$${_grandTotal.toStringAsFixed(2)}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: brandGold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: brandGold.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline, color: brandGold, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Open your banking app and scan this QR code to complete payment',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildKHQRSection() {
+  //   return Container(
+  //     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //     padding: const EdgeInsets.all(20),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(20),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.05),
+  //           blurRadius: 10,
+  //           offset: const Offset(0, 2),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: [
+  //         Text(
+  //           'Scan KHQR Code',
+  //           style: GoogleFonts.poppins(
+  //             fontSize: 16,
+  //             fontWeight: FontWeight.bold,
+  //             color: darkGrey,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 20),
+  //         Container(
+  //           padding: const EdgeInsets.all(20),
+  //           decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             borderRadius: BorderRadius.circular(16),
+  //             border: Border.all(color: brandGold, width: 2),
+  //           ),
+  //           child: Column(
+  //             children: [
+  //               // QR Code Image
+  //               Container(
+  //                 width: 200,
+  //                 height: 200,
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.white,
+  //                   borderRadius: BorderRadius.circular(12),
+  //                 ),
+  //                 child: Image.network(
+  //                   'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=KHQR:LuxeStay-Booking-${DateTime.now().millisecondsSinceEpoch}',
+  //                   fit: BoxFit.contain,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 16),
+  //               Text(
+  //                 'Total: \$${_grandTotal.toStringAsFixed(2)}',
+  //                 style: GoogleFonts.poppins(
+  //                   fontSize: 20,
+  //                   fontWeight: FontWeight.bold,
+  //                   color: brandGold,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         const SizedBox(height: 16),
+  //         Container(
+  //           padding: const EdgeInsets.all(12),
+  //           decoration: BoxDecoration(
+  //             color: brandGold.withOpacity(0.1),
+  //             borderRadius: BorderRadius.circular(12),
+  //           ),
+  //           child: Row(
+  //             children: [
+  //               const Icon(Icons.info_outline, color: brandGold, size: 20),
+  //               const SizedBox(width: 12),
+  //               Expanded(
+  //                 child: Text(
+  //                   'Open your banking app and scan this QR code to complete payment',
+  //                   style: GoogleFonts.poppins(
+  //                     fontSize: 12,
+  //                     color: Colors.grey[700],
+  //                     height: 1.4,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildPriceSummary() {
     return Container(
@@ -816,6 +995,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         checkInDate: widget.checkInDate,
         checkOutDate: widget.checkOutDate,
         paymentMethod: _mapPaymentMethod(_selectedPaymentMethod),
+        paymentMethodId: _selectedPaymentMethodId,
         numberOfGuests: widget.adults + widget.children,
         adult: widget.adults,
         child: widget.children,
@@ -843,15 +1023,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   String _mapPaymentMethod(String selected) {
     final Map<String, String> paymentMap = {
-      'credit_card': 'Credit Card',
+      'card': 'card',
+      'apple_pay': 'apple_pay',
+      'google_pay': 'google_pay',
       'aba': 'ABA Bank',
       'aceleda': 'ACELEDA Bank',
       'wing': 'Wing Bank',
       'khqr': 'KHQR',
-      'apple_pay': 'Apple Pay',
-      'google_pay': 'Google Pay',
     };
-    return paymentMap[selected] ?? 'Credit Card';
+    return paymentMap[selected] ?? 'card';
   }
 
   void _showSuccessDialog(BookingResponse bookingResponse) {

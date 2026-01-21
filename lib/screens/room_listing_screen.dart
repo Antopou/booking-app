@@ -237,18 +237,22 @@ class _RoomListingScreenContentState extends State<RoomListingScreenContent> wit
       children: [
         _buildAppBar(),
         Expanded(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FadeTransition(opacity: _heroOpacity, child: _buildHeroSection()),
-                const SizedBox(height: 50),
-                _buildFeaturesGrid(),
-                _buildRoomSectionHeader(),
-                FadeTransition(opacity: _filterFade, child: _buildFilters()),
-                _buildRoomList(),
-              ],
+          child: RefreshIndicator(
+            onRefresh: _loadRooms,
+            color: brandGold,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FadeTransition(opacity: _heroOpacity, child: _buildHeroSection()),
+                  const SizedBox(height: 50),
+                  _buildFeaturesGrid(),
+                  _buildRoomSectionHeader(),
+                  FadeTransition(opacity: _filterFade, child: _buildFilters()),
+                  _buildRoomList(),
+                ],
+              ),
             ),
           ),
         ),
